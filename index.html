@@ -120,6 +120,37 @@ button{cursor:pointer}
 .proto{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 126px);inset-inline-start:12px;font-size:11px;font-weight:600;background:var(--warm);color:var(--warm-ink);border-radius:10px;padding:2px 8px;pointer-events:none}
 
 /* ---------- wide screens: sheet becomes a floating side card */
+/* ---------- routes */
+button.cta{border:0;width:100%;font:inherit;text-align:start;cursor:pointer}
+body.picking #map{cursor:crosshair}
+.route-case,.route-line,.route-flow{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.route-case{stroke:#fff;stroke-width:12}
+.route-line{stroke:var(--here);stroke-width:7}
+.route-flow{stroke:#fff;stroke-width:2.5;stroke-dasharray:1 13;animation:flow 1.1s linear infinite;opacity:.9}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.go{cursor:pointer}
+.warn{background:var(--warm);color:var(--warm-ink);border-radius:12px;padding:8px 12px;font-size:14px;margin:10px 0 0}
+.summary{display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;color:var(--ink)}
+.summary span:first-child{color:var(--here);display:grid}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.modes button{display:flex;align-items:center;gap:10px;border:2px solid var(--line);background:var(--sheet);border-radius:16px;padding:10px 12px;text-align:start;color:var(--ink);font:inherit;cursor:pointer}
+.modes button[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.modes .mi{flex:none;display:grid;color:var(--accent)}
+.modes b{display:block;font-size:14px;font-weight:600}
+.modes small{color:var(--muted);font-size:13px}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{position:relative}
+.steps li:not(:last-child)::after{content:'';position:absolute;inset-inline-start:21px;top:44px;bottom:-4px;width:2px;background:var(--line);border-radius:1px}
+.steps button{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:start;border:0;background:none;padding:6px 4px;border-radius:12px;font:inherit;font-size:15px;line-height:1.5;color:var(--ink);cursor:pointer}
+.steps button:hover,.steps button:active{background:var(--sheet-2)}
+.sico{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--sheet-2);color:var(--ink)}
+.sico.start{background:var(--here);color:#fff}
+.sico.arrive{background:var(--accent);color:var(--accent-ink)}
+.sico.stair{background:var(--c-stair);color:var(--map-ink)}
+.sico.elev{background:var(--c-elev);color:var(--map-ink)}
+.stx{padding-top:5px;min-width:0}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.actions .cta{justify-content:center;padding:12px}
 @media (min-width: 900px){
   .top{inset-inline-end:12px;width:auto}
   .top .searchrow{width:416px;max-width:100%}
@@ -1058,9 +1089,9 @@ const NS='http://www.w3.org/2000/svg';
 const HERE = {
   'g-elev-east': {floor:'G', x:2602, y:2098, ar:'عند الخروج من المصعد، بجانب غرفة الكهرباء', en:'Stepping out of the elevator, next to the electrical room'}
 };
-let hereId = (/here=([\w-]+)/.exec(location.hash)||[])[1];
-if(!HERE[hereId]) hereId='g-elev-east';
-const here = HERE[hereId];
+const hereId = (/here=([\w-]+)/.exec(location.hash)||[])[1];
+let here = HERE[hereId] ? {...HERE[hereId], preset:true} : null;   // set by tapping the map
+const DEBUG = /debug/.test(location.hash);
 
 // ---------- text
 const T = {
@@ -1115,18 +1146,18 @@ const pname=p=>(lang==='ar'?(p.name_ar||p.name_en):(p.name_en||p.name_ar))||'';
 const rname=r=>(lang==='ar'?(r.ar||r.en):(r.en||r.ar))||T[lang].cats[r.cat]||'';
 const titleOf=id=>{ const {r}=ROOMS[id]; const ps=fac(id); return ps.length?pname(ps[0]):rname(r); };
 const fIdx=k=>FLOORS.findIndex(f=>f.key===k);
-const hereIdx=fIdx(here.floor);
+const hereFloor=()=> here ? here.floor : null;
 
 // ---------- map drawing
 const svg=document.getElementById('map');
-let hereG=null; let fi=hereIdx, vb=null, selId=null, hits=new Set(), labels=[];
+let hereG=null, SCALED=[]; let fi=here?fIdx(here.floor):0, vb=null, selId=null, hits=new Set(), labels=[];
 function el(tag,a,p){ const e=document.createElementNS(NS,tag); for(const k in a) e.setAttribute(k,a[k]); p&&p.appendChild(e); return e; }
 const pts=p=>p.map(q=>q.join(',')).join(' ');
 const measure=document.createElement('canvas').getContext('2d');
 const tw=(s,fs,w=600)=>{ measure.font=`${w} ${fs}px 'Readex Pro', sans-serif`; return measure.measureText(s).width; };
 
 function draw(){
-  const f=FLOORS[fi]; svg.textContent=''; labels=[];
+  const f=FLOORS[fi]; svg.textContent=''; labels=[]; SCALED=[];
   (f.roof||[]).forEach(p=>el('polygon',{points:pts(p),class:'roof'},svg));
   const w=el('g',{class:'walk','stroke-linejoin':'round'},svg);
   f.circ.forEach(p=>el('polygon',{points:pts(p),stroke:'var(--walk)','stroke-width':6},w));
@@ -1152,7 +1183,9 @@ function draw(){
   });
   // you are here (drawn in screen pixels, rescaled on every zoom)
   hereG=null;
-  if(fi===hereIdx){ hereG=el('g',{'pointer-events':'none'},svg);
+  drawRoute(f);
+  if(DEBUG) drawDebug(f);
+  if(here && here.floor===f.key){ hereG=el('g',{'pointer-events':'none'},svg);
     el('circle',{cx:0,cy:0,r:30,class:'here-pulse'},hereG);
     el('circle',{cx:0,cy:0,r:9,fill:'var(--here)',stroke:'#fff','stroke-width':3},hereG);
     const txt=t('here'); const fw=tw(txt,13,700)+22;
@@ -1161,12 +1194,12 @@ function draw(){
   if(!vb) fit(); else apply();
 }
 // show labels only when they'd be readable on screen
-function updateLabels(){ const px=svg.clientWidth/vb.w; if(hereG) hereG.setAttribute('transform',`translate(${here.x},${here.y}) scale(${1/px})`); labels.forEach(l=>{ const on = l.kind==='icon' ? true : l.min*px>=8.5; l.node.style.display=on?'':'none'; }); }
+function updateLabels(){ const px=svg.clientWidth/vb.w; if(hereG) hereG.setAttribute('transform',`translate(${here.x},${here.y}) scale(${1/px})`); SCALED.forEach(m=>m.g.setAttribute('transform',`translate(${m.x},${m.y}) scale(${1/px})`)); labels.forEach(l=>{ const on = l.kind==='icon' ? true : l.min*px>=8.5; l.node.style.display=on?'':'none'; }); }
 
 // ---------- pan / zoom
 function fit(){ const f=FLOORS[fi]; const W=svg.clientWidth, H=svg.clientHeight; const s=Math.max(f.w/W,f.h/(H*0.62)); vb={w:W*s,h:H*s}; vb.x=f.w/2-vb.w/2; vb.y=f.h/2-vb.h*0.44; apply(); }
 function fitIds(ids){ const f=FLOORS[fi]; const bs=ids.map(id=>ROOMS[id]).filter(R=>R&&R.f===f).map(R=>R.b); if(!bs.length) return;
-  let x1=Math.min(...bs.map(b=>b.x1),here.floor===f.key?here.x:1e9), x2=Math.max(...bs.map(b=>b.x2),here.floor===f.key?here.x:-1e9), y1=Math.min(...bs.map(b=>b.y1),here.floor===f.key?here.y:1e9), y2=Math.max(...bs.map(b=>b.y2),here.floor===f.key?here.y:-1e9);
+  let x1=Math.min(...bs.map(b=>b.x1),here&&here.floor===f.key?here.x:1e9), x2=Math.max(...bs.map(b=>b.x2),here&&here.floor===f.key?here.x:-1e9), y1=Math.min(...bs.map(b=>b.y1),here&&here.floor===f.key?here.y:1e9), y2=Math.max(...bs.map(b=>b.y2),here&&here.floor===f.key?here.y:-1e9);
   const W=svg.clientWidth,H=svg.clientHeight, wide=W>=900, visH=wide?H:H*0.42, top=wide?0:H*0.17, pad=150;
   const s=Math.max((x2-x1+pad*2)/(wide?W*0.6:W),(y2-y1+pad*2)/visH,350/W); vb={w:W*s,h:H*s};
   vb.x=(x1+x2)/2-vb.w/2-(wide?vb.w*0.15*(lang==='ar'?-1:1):0); vb.y=(y1+y2)/2-(top+visH/2)*s; apply(); }
@@ -1183,8 +1216,10 @@ svg.addEventListener('pointermove',e=>{ if(!P.has(e.pointerId)) return; const p=
   if(P.size===2&&pinch){ const [a,b]=[...P.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const [cx,cy]=toSvg((a.x+b.x)/2,(a.y+b.y)/2); zoomAt(pinch.w*pinch.d/d/vb.w,cx,cy); moved=99; } });
 const up=e=>{ const tap=moved<=5&&P.size===1; P.delete(e.pointerId); if(P.size<2) pinch=null;
   if(tap&&e.type==='pointerup'){ const now=Date.now(); const [x,y]=toSvg(e.clientX,e.clientY);
+    if(picking){ pickAt(x,y,e.clientX,e.clientY); lastTap=0; return; }
     if(now-lastTap<300){ zoomAt(1/1.8,x,y); lastTap=0; return; } lastTap=now;
     const n=document.elementFromPoint(e.clientX,e.clientY), id=n&&n.getAttribute&&n.getAttribute('data-id');
+    const go=n&&n.closest&&n.closest('[data-go]'); if(go){ showFloor(go.getAttribute('data-go')); return; }
     if(id && !['void','entry'].includes(ROOMS[id]?.r.cat)) openRoom(id,false); else if(!hits.size){ setSheet('peek'); } } };
 svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
 window.addEventListener('resize',()=>{ vb=null; draw(); placeLocate(); });
@@ -1192,7 +1227,7 @@ window.addEventListener('resize',()=>{ vb=null; draw(); placeLocate(); });
 // ---------- floors
 function drawFloors(){ const box=document.getElementById('floors'); box.textContent='';
   [...FLOORS].reverse().forEach(f=>{ const i=FLOORS.indexOf(f); const b=document.createElement('button'); b.type='button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected',i===fi); b.setAttribute('aria-label',T[lang].floor[f.key]);
-    b.textContent=f.key==='G'?(lang==='ar'?'أ':'G'):f.key; if(i===hereIdx){ const d=document.createElement('span'); d.className='you'; b.append(d); }
+    b.textContent=f.key==='G'?(lang==='ar'?'أ':'G'):f.key; if(here && f.key===here.floor){ const d=document.createElement('span'); d.className='you'; b.append(d); }
     b.onclick=()=>{ if(fi!==i){ fi=i; vb=null; draw(); drawFloors(); } }; box.append(b); }); }
 
 // ---------- chips
@@ -1207,8 +1242,278 @@ function drawChips(){ const box=document.getElementById('chips'); box.textConten
 function clearHits(){ hits=new Set(); chipOn=null; drawChips(); draw(); home(); }
 
 // ---------- distances from "you are here"
-function dist(id){ const R=ROOMS[id]; if(R.f.key!==here.floor) return Infinity; return Math.hypot(R.b.cx-here.x,R.b.cy-here.y); }
+function dist(id){ const R=ROOMS[id]; if(!here) return 0; if(R.f.key!==here.floor) return Infinity; return Math.hypot(R.b.cx-here.x,R.b.cy-here.y); }
 function nearestOf(test){ let best=null,bd=Infinity; for(const id in ROOMS){ const {r}=ROOMS[id]; if(!test(r,id)) continue; const d=dist(id); if(d<bd){bd=d;best=id;} } return best; }
+
+// ---------- routes: walking network, route planning and step-by-step directions
+const ROUTABLE=new Set(['G','1']);          // floors with step-by-step routes so far
+const CELL=15;                              // walking-grid cell, in map units
+const M_PER_UNIT=0.032, WALK_MS=1.1;        // map unit ≈ 3.2 cm (from room sizes); walking speed m/s
+const LINK_S={stair:25, elev:60};           // extra seconds for changing floor
+// stairs and elevators that connect floors: [ground-floor id, first-floor id, kind]
+const LINKS=[
+ ['M-001','F1-022','stair'],['M-019','F1-119','stair'],['M-024','F1-183','stair'],['M-034','F1-184','stair'],
+ ['M-029','F1-185','stair'],['M-039','F1-186','stair'],['M-048','F1-038','stair'],['M-071','F1-176','stair'],
+ ['M-078','F1-157','stair'],['M-086','F1-149','stair'],['M-096','F1-163','stair'],
+ ['M-018','F1-104','elev'],['M-051','F1-101','elev']];
+const LANDMARK=new Set(['wc','prayer','library','stair','elev','lecture','aud']);
+let route=null, picking=false, pendingDest=null;
+
+Object.assign(IC,{
+ route:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h7a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7"/>',
+ left:'<path d="M16 20v-7a4 4 0 0 0-4-4H5M9 5 5 9l4 4"/>', right:'<path d="M8 20v-7a4 4 0 0 1 4-4h7M15 5l4 4-4 4"/>',
+ straight:'<path d="M12 20V4M7 9l5-5 5 5"/>', sleft:'<path d="M15 20v-5L8 8M8 13V8h5"/>', sright:'<path d="M9 20v-5l7-7M16 13V8h-5"/>',
+ uturn:'<path d="M9 20V10a4 4 0 0 1 8 0v3M14 10l3 3 3-3"/>', arrive:'<path d="M6 21V4h11l-2 4 2 4H6"/>'});
+Object.assign(T.ar,{directions:'الاتجاهات', from:s=>`من ${s}`, setFirst:'حدد موقعك على الخريطة أولًا', whereTitle:'أين أنت الآن؟',
+ whereSub:'حدد مكانك على الخريطة، وسنرسم لك الطريق إلى وجهتك خطوة بخطوة.', setLoc:'حدد موقعي', changeLoc:'غيّر موقعي',
+ pickPill:'تحديد الموقع', pickTitle:'اضغط على مكان وقوفك في الخريطة', pickSub:'إذا كنت في طابق آخر، اختره من الأزرار الجانبية أولًا. يمكنك الضغط على ممر أو غرفة.',
+ pickErr:'هذا المكان خارج الممرات. اضغط على ممر أو غرفة.', cancel:'إلغاء', yourLoc:'موقعك', near:s=>`بالقرب من ${s}`, inside:s=>`داخل ${s}`, starting:s=>`البداية: ${s}`,
+ viaStairs:'عبر الدرج', viaElev:'عبر المصعد', mins:n=>`حوالي ${n===1?'دقيقة':n===2?'دقيقتين':n<=10?n+' دقائق':n+' دقيقة'}`,
+ changeStart:'غيّر البداية', endRoute:'إنهاء', steps:'الخطوات', toFloor:f=>`إلى ${f}`,
+ soon:'الاتجاهات خطوة بخطوة للطابق الثاني قادمة قريبًا. اصعد إليه بالدرج أو المصعد.', noPath:'لم نجد طريقًا من هذا المكان. جرّب تحديد موقعك في أحد الممرات.'});
+Object.assign(T.en,{directions:'Directions', from:s=>`From ${s}`, setFirst:'Set your location on the map first', whereTitle:'Where are you now?',
+ whereSub:'Set your spot on the map and we\u2019ll draw the way to where you\u2019re going, step by step.', setLoc:'Set my location', changeLoc:'Change my location',
+ pickPill:'Set location', pickTitle:'Tap where you\u2019re standing', pickSub:'On another floor? Switch floors with the buttons on the side first. You can tap a corridor or a room.',
+ pickErr:'That spot is outside the corridors. Tap a corridor or a room.', cancel:'Cancel', yourLoc:'your location', near:s=>`near ${s}`, inside:s=>`in ${s}`, starting:s=>`Starting ${s}`,
+ viaStairs:'By stairs', viaElev:'By elevator', mins:n=>`About ${n} min`,
+ changeStart:'Change start', endRoute:'End route', steps:'Steps', toFloor:f=>`To ${f.toLowerCase()}`,
+ soon:'Step-by-step directions for the second floor are coming soon. Take the stairs or elevator up to it.', noPath:'No walking route found from this spot. Try setting your location in a corridor.'});
+
+// geometry
+function pip(x,y,p){ let c=false; for(let i=0,j=p.length-1;i<p.length;j=i++){ const xi=p[i][0],yi=p[i][1],xj=p[j][0],yj=p[j][1]; if(((yi>y)!==(yj>y)) && x<(xj-xi)*(y-yi)/(yj-yi)+xi) c=!c; } return c; }
+function segDist(px,py,ax,ay,bx,by){ const dx=bx-ax,dy=by-ay,L=dx*dx+dy*dy; let u=L?((px-ax)*dx+(py-ay)*dy)/L:0; const uc=Math.max(0,Math.min(1,u)); const qx=ax+uc*dx,qy=ay+uc*dy; return [Math.hypot(px-qx,py-qy),qx,qy,u]; }
+function polyDist(x,y,p){ if(pip(x,y,p)) return [0,x,y]; let best=[1e9,x,y]; for(let i=0,j=p.length-1;i<p.length;j=i++){ const d=segDist(x,y,p[j][0],p[j][1],p[i][0],p[i][1]); if(d[0]<best[0]) best=[d[0],d[1],d[2]]; } return best; }
+const plen=pts=>{ let s=0; for(let i=1;i<pts.length;i++) s+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); return s; };
+
+// walking network: corridors rasterised to a grid, each room linked to its door
+const NET={};
+function net(key){ if(key in NET) return NET[key]; const f=FLOORS[fIdx(key)]; NET[key]=(f&&ROUTABLE.has(key))?buildNet(f):null; return NET[key]; }
+function buildNet(f){
+  const nx=Math.ceil(f.w/CELL)+2, ny=Math.ceil(f.h/CELL)+2, N=nx*ny, walk=new Uint8Array(N);
+  const polys=[...(f.circ||[]), ...f.rooms.filter(r=>r.cat==='vest').map(r=>r.poly)];
+  for(const p of polys){ const b=bbox(p);
+    for(let j=Math.max(0,Math.floor(b.y1/CELL));j<=Math.min(ny-1,Math.floor(b.y2/CELL));j++)
+      for(let i=Math.max(0,Math.floor(b.x1/CELL));i<=Math.min(nx-1,Math.floor(b.x2/CELL));i++){ const k=j*nx+i; if(!walk[k]&&pip((i+.5)*CELL,(j+.5)*CELL,p)) walk[k]=1; } }
+  // rooms are solid, even where a corridor outline runs under them
+  const inRoom=new Uint8Array(N);
+  for(const r of f.rooms){ if(['vest','entry'].includes(r.cat)) continue; const p=r.poly, b=bbox(p);
+    for(let j=Math.max(0,Math.floor(b.y1/CELL));j<=Math.min(ny-1,Math.floor(b.y2/CELL));j++)
+      for(let i=Math.max(0,Math.floor(b.x1/CELL));i<=Math.min(nx-1,Math.floor(b.x2/CELL));i++){ const k=j*nx+i; if(pip((i+.5)*CELL,(j+.5)*CELL,p)){ walk[k]=0; inRoom[k]=1; } } }
+  // drop slivers narrower than 3 cells (wall gaps between neighbouring rooms)
+  { const thin=(k,d)=>{ let a=k-d,b=k+d,n=1; while(walk[a]){ a-=d; n++; } while(walk[b]){ b+=d; n++; } return n<3&&(inRoom[a]||inRoom[a-d])&&(inRoom[b]||inRoom[b+d]); }, cut=[];
+    for(let k=nx;k<N-nx;k++) if(walk[k]&&(thin(k,1)||thin(k,nx))) cut.push(k); cut.forEach(k=>walk[k]=0); }
+  // bridge hairline gaps (up to 2 cells) between neighbouring corridor pieces
+  const add=[];
+  for(let j=1;j<ny-1;j++) for(let i=1;i<nx-1;i++){ const k=j*nx+i; if(walk[k]) continue;
+    for(const [dx,dy] of [[1,0],[0,1]]){ let a=0,b=0;
+      for(let s=1;s<=2&&!a;s++){ const ii=i-dx*s,jj=j-dy*s; if(ii>=0&&jj>=0&&walk[jj*nx+ii]) a=s; }
+      for(let s=1;s<=2&&!b;s++){ const ii=i+dx*s,jj=j+dy*s; if(ii<nx&&jj<ny&&walk[jj*nx+ii]) b=s; }
+      if(a&&b&&a+b<=3){ const x=(i+.5)*CELL,y=(j+.5)*CELL; if(!f.rooms.some(r=>!['vest','entry'].includes(r.cat)&&pip(x,y,r.poly))) add.push(k); break; } } }
+  add.forEach(k=>walk[k]=1);
+  // discard specks of floor left between rooms (under ~20 cells ≈ 4 m²)
+  { const seen=new Uint8Array(N); for(let s0=0;s0<N;s0++){ if(!walk[s0]||seen[s0]) continue; const st=[s0], got=[]; seen[s0]=1;
+      while(st.length){ const k=st.pop(); got.push(k); for(const n of [k-1,k+1,k-nx,k+nx]) if(walk[n]&&!seen[n]){ seen[n]=1; st.push(n); } }
+      if(got.length<20) got.forEach(k=>walk[k]=0); } }
+  // clearance from walls (cells), used to keep routes in the middle of corridors
+  const clear=new Uint8Array(N), Q=new Int32Array(N); let qh=0,qt=0;
+  for(let k=0;k<N;k++){ if(!walk[k]) continue; clear[k]=255; if(!walk[k-1]||!walk[k+1]||!walk[k-nx]||!walk[k+nx]){ clear[k]=1; Q[qt++]=k; } }
+  while(qh<qt){ const k=Q[qh++], c=clear[k]; for(const n of [k-1,k+1,k-nx,k+nx]){ if(walk[n]&&clear[n]===255){ clear[n]=Math.min(250,c+1); Q[qt++]=n; } } }
+  const G={f,nx,ny,N,walk,clear,doors:{}};
+  f.rooms.forEach(r=>{ if(r.id.includes('~')||['vest','void','court'].includes(r.cat)) return; const d=findDoor(G,r); if(d) G.doors[r.id]=d; });
+  // rooms entered through another room ("Through 12-0.028" in the Door column)
+  f.rooms.forEach(r=>{ const m=/^(?:through|via)\s+(.+)$/i.exec((r.door||'').trim()); if(!m) return; const v=m[1].trim();
+    const o=f.rooms.find(x=>x.num===v||x.num===f.prefix+v); if(o&&G.doors[o.id]) G.doors[r.id]={...G.doors[o.id],via:o.id}; });
+  return G;
+}
+function findDoor(G,r){
+  const {nx,ny,walk}=G, b=bbox(r.poly), S=(((r.door||'').trim().toLowerCase().match(/^(north|south|east|west)/)||[])[1]||'')[0];
+  for(const R of [90,220]){ let best=null;
+    const i0=Math.max(0,Math.floor((b.x1-R)/CELL)), i1=Math.min(nx-1,Math.floor((b.x2+R)/CELL)), j0=Math.max(0,Math.floor((b.y1-R)/CELL)), j1=Math.min(ny-1,Math.floor((b.y2+R)/CELL));
+    for(let j=j0;j<=j1;j++) for(let i=i0;i<=i1;i++){ const k=j*nx+i; if(!walk[k]) continue; const x=(i+.5)*CELL, y=(j+.5)*CELL;
+      if((S==='n'&&y>b.y1+b.h*.3)||(S==='s'&&y<b.y2-b.h*.3)||(S==='w'&&x>b.x1+b.w*.3)||(S==='e'&&x<b.x2-b.w*.3)) continue;
+      const [d,ex,ey]=polyDist(x,y,r.poly); if(d>R) continue;
+      const sc=d+0.06*Math.hypot(ex-b.cx,ey-b.cy); if(!best||sc<best.sc) best={sc,k,x,y,ex,ey}; }
+    if(best) return best; }
+  return null;
+}
+const cellXY=(G,k)=>[(k%G.nx+.5)*CELL, (Math.floor(k/G.nx)+.5)*CELL];
+function nearestWalk(G,x,y,R){ let best=-1,bd=1e9; const i0=Math.max(0,Math.floor((x-R)/CELL)), i1=Math.min(G.nx-1,Math.floor((x+R)/CELL)), j0=Math.max(0,Math.floor((y-R)/CELL)), j1=Math.min(G.ny-1,Math.floor((y+R)/CELL));
+  for(let j=j0;j<=j1;j++) for(let i=i0;i<=i1;i++){ const k=j*G.nx+i; if(!G.walk[k]) continue; const d=Math.hypot((i+.5)*CELL-x,(j+.5)*CELL-y); if(d<bd&&d<=R){ bd=d; best=k; } } return best; }
+const NB=[[1,0,1],[-1,0,1],[0,1,1],[0,-1,1],[1,1,Math.SQRT2],[1,-1,Math.SQRT2],[-1,1,Math.SQRT2],[-1,-1,Math.SQRT2]];
+function dijkstra(G,src){ const {N,nx,walk,clear}=G, dist=new Float64Array(N).fill(Infinity), prev=new Int32Array(N).fill(-1), hk=[], hd=[];
+  const push=(k,d)=>{ let i=hk.length; hk.push(k); hd.push(d); while(i>0){ const p=(i-1)>>1; if(hd[p]<=d) break; hk[i]=hk[p]; hd[i]=hd[p]; i=p; } hk[i]=k; hd[i]=d; };
+  const pop=()=>{ const k=hk[0], d=hd[0], lk=hk.pop(), ld=hd.pop(); const n=hk.length; if(n){ let i=0; for(;;){ let c=2*i+1; if(c>=n) break; if(c+1<n&&hd[c+1]<hd[c]) c++; if(hd[c]>=ld) break; hk[i]=hk[c]; hd[i]=hd[c]; i=c; } hk[i]=lk; hd[i]=ld; } return [k,d]; };
+  const pen=c=>c>=3?1:c===2?1.3:1.8;
+  src.forEach(k=>{ dist[k]=0; push(k,0); });
+  while(hk.length){ const [k,d]=pop(); if(d>dist[k]) continue; const i=k%nx;
+    for(const [dx,dy,l] of NB){ const ii=i+dx; if(ii<0||ii>=nx) continue; const n=k+dx+dy*nx; if(n<0||n>=N||!walk[n]) continue;
+      if(dx&&dy&&(!walk[k+dx]||!walk[k+dy*nx])) continue;
+      const nd=d+l*pen(clear[n]); if(nd<dist[n]){ dist[n]=nd; prev[n]=k; push(n,nd); } } }
+  return {dist,prev}; }
+const trace=(prev,t)=>{ const out=[]; for(let k=t;k!==-1;k=prev[k]) out.push(k); return out; };   // t → source
+function los(G,a,b,minC){ const {nx,walk,clear}=G; let x0=a%nx,y0=Math.floor(a/nx); const x1=b%nx,y1=Math.floor(b/nx), dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1; let e=dx+dy;
+  for(;;){ const k=y0*nx+x0; if(!walk[k]||clear[k]<minC) return false; if(x0===x1&&y0===y1) return true; const e2=2*e; if(e2>=dy){ e+=dy; x0+=sx; } if(e2<=dx){ e+=dx; y0+=sy; } } }
+function smooth(G,cells){ if(cells.length<3) return cells; const out=[cells[0]]; let i=0;
+  while(i<cells.length-1){ let j=i+1; const c0=Math.min(2,G.clear[cells[i]]);
+    while(j+1<cells.length && los(G,cells[i],cells[j+1],Math.min(c0,G.clear[cells[j+1]]))) j++;
+    out.push(cells[j]); i=j; } return out; }
+const dedupe=pts=>pts.filter((p,i)=>!i||Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1])>3);
+
+function startCell(G){ if(here.room&&G.doors[here.room]) return G.doors[here.room].k; return nearestWalk(G,here.x,here.y,150); }
+function startPoint(G){ const d=here.room&&G.doors[here.room]; return d?[d.ex,d.ey]:[here.x,here.y]; }
+function planRoute(destId){
+  const D=ROOMS[destId]; if(!here||!D) return {error:'nopath'};
+  const A=here.floor, B=D.f.key, GA=net(A), GB=net(B); if(!GA||!GB) return {error:'floor'};
+  const s=startCell(GA), dd=GB.doors[destId]; if(s<0||!dd) return {error:'nopath'};
+  const sp=startPoint(GA), ep=[dd.ex,dd.ey];
+  const leg=(G,cells,from,to)=>{ const p=smooth(G,cells).map(k=>cellXY(G,k)); if(from) p.unshift(from); if(to) p.push(to); return dedupe(p); };
+  if(A===B){ const r=dijkstra(GA,[s]); if(!isFinite(r.dist[dd.k])) return {error:'nopath'};
+    return {single:{legs:[{floor:A,pts:leg(GA,trace(r.prev,dd.k).reverse(),sp,ep)}]}}; }
+  const ra=dijkstra(GA,[s]), rb=dijkstra(GB,[dd.k]), opts={};
+  for(const kind of ['stair','elev']){ let best=null;
+    LINKS.filter(l=>l[2]===kind).forEach(l=>{ const ia=A==='G'?l[0]:l[1], ib=A==='G'?l[1]:l[0], da=GA.doors[ia], db=GB.doors[ib]; if(!da||!db) return;
+      const c=ra.dist[da.k]+rb.dist[db.k]; if(isFinite(c)&&(!best||c<best.c)) best={c,ia,ib,da,db}; });
+    if(!best) continue;
+    opts[kind]={via:kind, legs:[{floor:A,pts:leg(GA,trace(ra.prev,best.da.k).reverse(),sp,[best.da.ex,best.da.ey]),to:best.ia},
+                               {floor:B,pts:leg(GB,trace(rb.prev,best.db.k),[best.db.ex,best.db.ey],ep),from:best.ib}]}; }
+  if(!opts.stair&&!opts.elev) return {error:'nopath'};
+  return {opts};
+}
+const curOpt=()=>route&&(route.res.single||route.res.opts[route.mode]);
+function minutes(opt){ const m=opt.legs.reduce((s,L)=>s+plen(L.pts),0)*M_PER_UNIT; return Math.max(1,Math.round((m/WALK_MS+(opt.via?LINK_S[opt.via]:0))/60)); }
+
+// names used in the written steps
+const iso=s=>'\u2066'+s+'\u2069';
+const labelOf=id=>{ const {r}=ROOMS[id]; return r.num ? `${rname(r)} ${iso(r.num)}` : rname(r); };
+function hereLabel(long){ if(!here) return ''; if(here.preset) return long?here[lang]:t('yourLoc');
+  if(here.room){ const o=t('inside')(labelOf(here.room)); return long&&lang==='en'?o.replace(/^./,c=>c.toUpperCase()):o; }
+  const G=net(here.floor); let best=null,bd=260;
+  if(G) for(const id in G.doors){ const d=G.doors[id]; if(d.via) continue; const {r}=ROOMS[id]||{}; if(!r||(!r.num&&!LANDMARK.has(r.cat))) continue;
+    const dd=Math.hypot(d.ex-here.x,d.ey-here.y)*(LANDMARK.has(r.cat)?0.8:1); if(dd<bd){ bd=dd; best=id; } }
+  const nm=best&&(LANDMARK.has(ROOMS[best].r.cat)&&lang==='en'?'the '+rname(ROOMS[best].r).toLowerCase():labelOf(best));
+  const out=best ? t('near')(nm) : (lang==='en'?'on the ':'')+T[lang].floor[here.floor].replace(/^./,c=>lang==='en'?c.toLowerCase():c);
+  return long&&lang==='en' ? out.replace(/^./,c=>c.toUpperCase()) : out; }
+function doorsNear(key){ const G=net(key); const out=[]; for(const id in G.doors){ const d=G.doors[id], R=ROOMS[id]; if(!R||d.via) continue; out.push({id,x:d.ex,y:d.ey,r:R.r}); } return out; }
+function describeSeg(key,a,b,skip){ const pass=[]; for(const o of doorsNear(key)){ if(skip.has(o.id)) continue; const [d,,,u]=segDist(o.x,o.y,a[0],a[1],b[0],b[1]); if(d<50&&u>0.04&&u<0.97) pass.push([u,o]); }
+  pass.sort((x,y)=>x[0]-y[0]); const nums=pass.map(p=>p[1]).filter(o=>o.r.num&&!['svc','stair','elev','wc'].includes(o.r.cat));
+  const lm=pass.map(p=>p[1]).find(o=>['wc','prayer','library','lecture','aud'].includes(o.r.cat));
+  return {m:Math.max(5,Math.round(plen([a,b])*M_PER_UNIT/5)*5), first:nums[0]&&nums[0].r.num, last:nums.length>1?nums[nums.length-1].r.num:null, lm:lm&&lm.id}; }
+function landmarkAt(key,p,skip){ let best=null,bd=1e9; for(const o of doorsNear(key)){ if(skip.has(o.id)) continue; const d=Math.hypot(o.x-p[0],o.y-p[1]); const L=LANDMARK.has(o.r.cat);
+    if(L&&d<80&&d*0.6<bd){ bd=d*0.6; best=o; } else if(o.r.num&&!L&&o.r.cat!=='svc'&&d<60&&d<bd){ bd=d; best=o; } } return best&&best.id; }
+function turnOf(a,b,c){ const v1=[b[0]-a[0],b[1]-a[1]], v2=[c[0]-b[0],c[1]-b[1]]; const ang=Math.atan2(v1[0]*v2[1]-v1[1]*v2[0], v1[0]*v2[0]+v1[1]*v2[1])*180/Math.PI;
+  const A=Math.abs(ang); if(A<30) return 'straight'; if(A>150) return 'uturn'; if(A<55) return ang>0?'sright':'sleft'; return ang>0?'right':'left'; }
+// drop wiggles: near-straight bends and turns separated by less than ~4 m
+function simplify(pts,toLink){ let p=pts.slice(), changed=true; const d=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1]);
+  while(changed&&p.length>2){ changed=false;
+    for(let i=1;i<p.length-1;i++){ const flat=turnOf(p[i-1],p[i],p[i+1])==='straight', shortOut=d(p[i],p[i+1])<130&&(toLink||i<p.length-2), shortIn=d(p[i-1],p[i])<130;
+      if(flat||shortOut||shortIn){ p.splice(i,1); changed=true; break; } } }
+  return p; }
+function buildSteps(opt,destId){ const steps=[], skip=new Set([destId, here&&here.room].filter(Boolean)), said=new Set();
+  opt.legs.forEach((L,li)=>{ const p=simplify(L.pts,!!L.to); if(L.to) skip.add(L.to); if(L.from) skip.add(L.from);
+    for(let k=0;k<p.length-1;k++){ const kind= k===0 ? (li===0?'start':'exit') : turnOf(p[k-1],p[k],p[k+1]);
+      const ex=()=>new Set([...skip,...said,...Object.keys(ROOMS).filter(id=>LANDMARK.has(ROOMS[id].r.cat)&&said.has('n:'+rname(ROOMS[id].r)))]);
+      const at=k?landmarkAt(L.floor,p[k],ex()):null; if(at){ said.add(at); if(LANDMARK.has(ROOMS[at].r.cat)) said.add('n:'+rname(ROOMS[at].r)); }
+      const seg=describeSeg(L.floor,p[k],p[k+1],ex()); if(seg.lm){ said.add(seg.lm); said.add('n:'+rname(ROOMS[seg.lm].r)); }
+      if(seg.first&&at&&ROOMS[at].r.num===seg.first){ seg.first=seg.last; seg.last=null; }
+      steps.push({kind, floor:L.floor, x:p[k][0], y:p[k][1], seg, at, via:opt.via}); }
+    if(L.to){ const e=p[p.length-1]; steps.push({kind:opt.via, floor:L.floor, x:e[0], y:e[1], to:opt.legs[li+1].floor, up:fIdx(opt.legs[li+1].floor)>fIdx(L.floor)}); } });
+  const L=opt.legs[opt.legs.length-1], p=simplify(L.pts), n=p.length, e=p[n-1], a=p[Math.max(0,n-2)], c=ROOMS[destId].b, d=net(L.floor).doors[destId];
+  const v1=[e[0]-a[0],e[1]-a[1]], v2=[c.cx-e[0],c.cy-e[1]], ang=Math.atan2(v1[0]*v2[1]-v1[1]*v2[0],v1[0]*v2[0]+v1[1]*v2[1])*180/Math.PI;
+  steps.push({kind:'arrive', floor:L.floor, x:e[0], y:e[1], side:Math.abs(ang)<35?'ahead':ang>0?'right':'left', via:d&&d.via});
+  return steps; }
+function stepText(s,destId){ const ar=lang==='ar', F=T[lang].floor;
+  const lmName=id=>{ const {r}=ROOMS[id]; return (ar?'':'the ')+rname(r); };
+  const seg=g=>{ if(!g) return ''; const pass = g.lm ? (ar?`، مرورًا بـ${rname(ROOMS[g.lm].r)}`:`, past ${lmName(g.lm)}`)
+      : g.first&&g.last ? (ar?`، مرورًا بالغرف من ${iso(g.first)} إلى ${iso(g.last)}`:`, passing rooms ${iso(g.first)} to ${iso(g.last)}`)
+      : g.first ? (ar?`، مرورًا بالغرفة ${iso(g.first)}`:`, passing room ${iso(g.first)}`) : '';
+    return (ar?`امشِ حوالي ${g.m} م`:`walk about ${g.m} m`)+pass; };
+  const at=s.at ? (LANDMARK.has(ROOMS[s.at].r.cat) ? (ar?` عند ${rname(ROOMS[s.at].r)}`:` at ${lmName(s.at)}`) : (ar?` عند الغرفة ${iso(ROOMS[s.at].r.num)}`:` by room ${iso(ROOMS[s.at].r.num)}`)) : '';
+  const TURN=ar?{left:'انعطف يسارًا',right:'انعطف يمينًا',sleft:'اتجه قليلًا إلى اليسار',sright:'اتجه قليلًا إلى اليمين',straight:'استمر إلى الأمام',uturn:'استدر للخلف'}
+               :{left:'Turn left',right:'Turn right',sleft:'Bear left',sright:'Bear right',straight:'Keep going straight',uturn:'Turn around'};
+  switch(s.kind){
+    case 'start': return ar?`من ${here.room?labelOf(here.room):'مكانك'}، ${seg(s.seg)}.`:`From ${here.room?labelOf(here.room):'where you are'}, ${seg(s.seg)}.`;
+    case 'exit': return ar?`اخرج من ${s.via==='elev'?'المصعد':'الدرج'}، ثم ${seg(s.seg)}.`:`Leave the ${s.via==='elev'?'elevator':'stairs'}, then ${seg(s.seg)}.`;
+    case 'stair': case 'elev': { const f=F[s.to]; return ar?`${s.up?'اصعد':'انزل'} ${s.kind==='elev'?'بالمصعد':'بالدرج'} إلى ${f}.`:`Take the ${s.kind==='elev'?'elevator':'stairs'} ${s.up?'up':'down'} to the ${f.toLowerCase()}.`; }
+    case 'arrive': { const name=labelOf(destId);
+      if(s.via) return ar?`ادخل من ${labelOf(s.via)}؛ ${name} بداخلها.`:`Go through ${labelOf(s.via)}; ${name} is inside.`;
+      const side=ar?{left:'على يسارك',right:'على يمينك',ahead:'أمامك'}[s.side]:{left:'on your left',right:'on your right',ahead:'ahead of you'}[s.side];
+      return ar?`${name} ${side}.`:`${name} is ${side}.`; }
+    default: return `${TURN[s.kind]}${at}${ar?'، ثم ':', then '}${seg(s.seg)}.`;
+  } }
+const STEP_IC={start:'here',exit:'walk',stair:'stair',elev:'elev',arrive:'arrive'};
+
+// map drawing
+function mark(x,y,cls){ const g=el('g',{class:cls},svg); SCALED.push({g,x,y}); return g; }
+function drawRoute(f){ const opt=curOpt(); if(!opt) return;
+  const rg=el('g',{'pointer-events':'none'},svg);
+  opt.legs.filter(L=>L.floor===f.key).forEach(L=>{ const d='M'+L.pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
+    el('path',{d,class:'route-case'},rg); el('path',{d,class:'route-line'},rg); el('path',{d,class:'route-flow'},rg); });
+  opt.legs.forEach((L,li)=>{ if(L.floor!==f.key) return;
+    const other = L.to ? opt.legs[li+1].floor : L.from ? opt.legs[li-1].floor : null;
+    if(other){ const pt = L.to ? L.pts[L.pts.length-1] : L.pts[0]; const up=fIdx(other)>fIdx(f.key);
+      const g=mark(pt[0],pt[1],'go'); g.setAttribute('data-go',other);
+      el('circle',{r:19,fill:`var(${opt.via==='elev'?'--c-elev':'--c-stair'})`,stroke:'#fff','stroke-width':3},g);
+      const ic=el('g',{transform:'translate(-11,-11) scale(.92)',color:'var(--map-ink)'},g); ic.innerHTML=IC[opt.via==='elev'?'elev':'stair'];
+      const txt=(up?'↑ ':'↓ ')+t('toFloor')(T[lang].floor[other]), w=tw(txt,12,700)+18;
+      el('rect',{x:-w/2,y:24,width:w,height:24,rx:12,fill:'var(--ink)'},g);
+      const tx=el('text',{x:0,y:36,'font-size':12,'font-weight':700,fill:'var(--sheet)','text-anchor':'middle','dominant-baseline':'central'},g); tx.textContent=txt; } });
+  const D=ROOMS[route.dest]; if(D.f.key===f.key){ const g=mark(D.b.cx,D.b.cy,'pin');
+    el('path',{d:'M0 0C-4-10-15-16-15-27a15 15 0 1 1 30 0C15-16 4-10 0 0Z',fill:'var(--accent)',stroke:'#fff','stroke-width':2.5},g);
+    el('circle',{cx:0,cy:-27,r:5.5,fill:'#fff'},g); } }
+function drawDebug(f){ const G=net(f.key); if(!G) return; const dg=el('g',{'pointer-events':'none',class:'dbg'},svg); let d='';
+  for(let j=0;j<G.ny;j++){ let i=0; while(i<G.nx){ if(!G.walk[j*G.nx+i]){ i++; continue; } let e=i; while(e<G.nx&&G.walk[j*G.nx+e]) e++; d+=`M${i*CELL} ${j*CELL}h${(e-i)*CELL}v${CELL}h${-(e-i)*CELL}z`; i=e; } }
+  el('path',{d,fill:'#2F6BFF',opacity:.18},dg);
+  f.rooms.forEach(r=>{ if(r.id.includes('~')||['vest','void','court'].includes(r.cat)) return; const b=ROOMS[r.id].b, dr=G.doors[r.id];
+    if(!dr){ el('polygon',{points:pts(r.poly),fill:'none',stroke:'#E00',"stroke-width":10},dg); return; }
+    el('line',{x1:b.cx,y1:b.cy,x2:dr.ex,y2:dr.ey,stroke:dr.via?'#C0F':'#E07000','stroke-width':4},dg);
+    el('circle',{cx:dr.ex,cy:dr.ey,r:10,fill:dr.via?'#C0F':'#E07000'},dg); });
+  LINKS.forEach(l=>{ const id=l[0].startsWith('M-')&&f.key==='G'?l[0]:f.key==='1'?l[1]:null; const R=id&&ROOMS[id]; if(!R) return;
+    const tx=el('text',{x:R.b.cx,y:R.b.cy,'font-size':30,'font-weight':700,fill:'#B00','text-anchor':'middle'},dg); tx.textContent=l[0]+'↔'+l[1]; }); }
+
+// flow: set location → plan → show
+function showFloor(key){ const i=fIdx(key); if(i<0) return; fi=i; vb=null; drawFloors(); draw(); const opt=curOpt(); const L=opt&&opt.legs.find(x=>x.floor===key); if(L) fitPts(L.pts); }
+function fitPts(p){ const xs=p.map(q=>q[0]), ys=p.map(q=>q[1]); fitBox(Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)); }
+function fitBox(x1,y1,x2,y2){ const W=svg.clientWidth,H=svg.clientHeight, wide=W>=900, visH=wide?H:H*0.42, top=wide?0:H*0.17, pad=160;
+  const s=Math.max((x2-x1+pad*2)/(wide?W*0.6:W),(y2-y1+pad*2)/visH,350/W); vb={w:W*s,h:H*s};
+  vb.x=(x1+x2)/2-vb.w/2-(wide?vb.w*0.15*(lang==='ar'?-1:1):0); vb.y=(y1+y2)/2-(top+visH/2)*s; apply(); }
+function fitFloor(){ const f=FLOORS[fi]; let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9; f.rooms.forEach(r=>{ const b=ROOMS[r.id.split('~')[0]]&&bbox(r.poly); if(!b) return; x1=Math.min(x1,b.x1); y1=Math.min(y1,b.y1); x2=Math.max(x2,b.x2); y2=Math.max(y2,b.y2); }); fitBox(x1+120,y1+120,x2-120,y2-120); }
+function startPick(dest){ pendingDest=dest; picking=true; document.body.classList.add('picking'); hits=new Set(); chipOn=null; drawChips(); draw(); pickView(); setSheet('peek'); }
+function pickView(err){ sc.textContent='';
+  sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill here',text:t('pickPill')}), h('span',{class:'pill',text:T[lang].floor[FLOORS[fi].key]})),
+    h('h2',{text:t('pickTitle')}), h('p',{class:'sub',text:t('pickSub')}));
+  if(err) sc.append(h('p',{class:'warn',text:err}));
+  sc.append(h('button',{class:'cta alt',type:'button',onclick:cancelPick}, h('span',{text:t('cancel')}))); }
+function cancelPick(){ picking=false; document.body.classList.remove('picking'); const d=pendingDest; pendingDest=null;
+  if(route) routeView(); else if(d) openRoom(d,true); else home(); }
+function pickAt(x,y,X,Y){ const f=FLOORS[fi], G=net(f.key);
+  const n=document.elementFromPoint(X,Y), id=n&&n.getAttribute&&n.getAttribute('data-id');
+  let room=(id&&ROOMS[id]&&!['void','entry','vest','court'].includes(ROOMS[id].r.cat))?id:null;
+  if(G){ if(room&&!G.doors[room]) room=null; if(!room&&nearestWalk(G,x,y,120)<0){ pickView(t('pickErr')); return; } }
+  here={floor:f.key,x,y,room}; picking=false; document.body.classList.remove('picking'); drawFloors();
+  const d=pendingDest||(route&&route.dest); pendingDest=null;
+  if(d) showRoute(d); else { draw(); home(); } }
+function startRoute(id){ if(!here){ startPick(id); return; } showRoute(id); }
+function showRoute(id){ const res=planRoute(id);
+  if(res.error){ route=null; openRoom(id,true,res.error==='floor'?t('soon'):t('noPath')); return; }
+  const keep=route&&route.dest===id?route.mode:null;
+  route={dest:id,res,mode:res.single?'single':(keep&&res.opts[keep]?keep:(res.opts.stair?'stair':'elev'))}; selId=id; hits=new Set();
+  const L=curOpt().legs[0]; fi=fIdx(L.floor); vb=null; drawFloors(); draw(); fitPts(L.pts); routeView(); }
+function routeView(){ const opt=curOpt(), R=ROOMS[route.dest], steps=buildSteps(opt,route.dest); sc.textContent='';
+  sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill',text:T[lang].floor[R.f.key]}), R.r.num?h('span',{class:'pill num',text:R.r.num}):null),
+    h('h2',{text:titleOf(route.dest)}), h('p',{class:'sub',text:t('starting')(hereLabel())}));
+  if(route.res.single) sc.append(h('div',{class:'summary'}, h('span',{html:icon('walk',18)}), h('span',{text:t('mins')(minutes(opt))})));
+  else sc.append(h('div',{class:'modes',role:'tablist'}, ['stair','elev'].filter(k=>route.res.opts[k]).map(k=>h('button',{type:'button',role:'tab','aria-selected':String(route.mode===k),
+      onclick:()=>{ route.mode=k; const L=curOpt().legs[0]; fi=fIdx(L.floor); vb=null; drawFloors(); draw(); fitPts(L.pts); routeView(); }},
+      h('span',{class:'mi',html:icon(k==='stair'?'stair':'elev',20)}), h('span',{}, h('b',{text:t(k==='stair'?'viaStairs':'viaElev')}), h('small',{text:t('mins')(minutes(route.res.opts[k]))}))))));
+  const ol=h('ol',{class:'steps','aria-label':t('steps')});
+  steps.forEach(s=>ol.append(h('li',{}, h('button',{type:'button',onclick:()=>goStep(s)}, h('span',{class:'sico '+s.kind,html:icon(STEP_IC[s.kind]||s.kind,18)}), h('span',{class:'stx',text:stepText(s,route.dest)})))));
+  sc.append(h('div',{class:'sec'}, h('h3',{text:t('steps')}), ol),
+    h('div',{class:'actions'}, h('button',{class:'cta alt',type:'button',onclick:()=>startPick(route.dest)}, h('span',{html:icon('here',20),style:'color:var(--here)'}), h('span',{text:t('changeStart')})),
+      h('button',{class:'cta alt',type:'button',onclick:endRoute}, h('span',{text:t('endRoute')}))));
+  setSheet('half'); }
+function goStep(s){ if(FLOORS[fi].key!==s.floor){ fi=fIdx(s.floor); vb=null; drawFloors(); draw(); } focus(s.x,s.y,1000); }
+function endRoute(){ const d=route&&route.dest; route=null; if(d) openRoom(d,true); else home(); }
+if(DEBUG) window.__wf={net,planRoute,ROOMS,LINKS,nearestWalk,dijkstra,get here(){return here},set here(v){here=v}};
 
 // ---------- sheet
 const sheet=document.getElementById('sheet'), sc=document.getElementById('sc');
@@ -1235,26 +1540,31 @@ function roomItem(id, extra){ const {r,f}=ROOMS[id]; const ps=fac(id); const k=p
   const sub=[T[lang].floor[f.key], r.num?'\u2066'+r.num+'\u2069':''].filter(Boolean).join(' · ');
   return h('button',{class:'item',type:'button',onclick:()=>openRoom(id,true)}, icoBox(k), h('span',{class:'tx'}, h('b',{text:extra||titleOf(id)}), h('small',{text:sub})), h('span',{class:'chev',text:lang==='ar'?'‹':'›'})); }
 
-function home(){ selId=null; sc.textContent='';
+function home(){ selId=null; route=null; sc.textContent='';
+  if(!here){ sc.append(h('h2',{text:t('whereTitle')}), h('p',{class:'sub',text:t('whereSub')}),
+      h('button',{class:'cta',type:'button',onclick:()=>startPick(null)}, h('span',{html:icon('here',22)}), h('span',{text:t('setLoc')})),
+      h('p',{class:'sub',style:'margin-top:14px',text:t('tip')})); draw(); return; }
   sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill here',text:t('here')}), h('span',{class:'pill',text:T[lang].floor[here.floor]})),
-    h('h2',{text:here[lang]}));
+    h('h2',{text:hereLabel(true)}));
   const L=h('div',{class:'list'});
   [['wc','wc',r=>r.cat==='wc'],['elev','stair',r=>r.cat==='stair'],['prayer','prayer',r=>r.cat==='prayer'],['library','library',r=>r.cat==='library'&&/Library$|المكتبة/.test((r.en||'')+(r.ar||''))]].forEach(([ck,ik,test])=>{
     const id=nearestOf(test); if(!id) return; const it=roomItem(id, ik==='stair'?(lang==='ar'?'أقرب درج':'Nearest stairs'):T[lang].chips[ck]); it.querySelector('.ico').replaceWith(icoBox(ik)); L.append(it); });
-  sc.append(h('div',{class:'sec'}, h('h3',{text:t('nearest')}), L), h('p',{class:'sub',style:'margin-top:14px',text:t('tip')}));
+  sc.append(h('div',{class:'sec'}, h('h3',{text:t('nearest')}), L), h('p',{class:'sub',style:'margin-top:14px',text:t('tip')}),
+    h('button',{class:'cta alt',type:'button',onclick:()=>startPick(null)}, h('span',{html:icon('here',22),style:'color:var(--here)'}), h('span',{text:t('changeLoc')})));
   draw(); }
 
-function openRoom(id, recenter){ const R=ROOMS[id]; if(!R) return; const {r,f,b}=R; selId=id;
+function openRoom(id, recenter, note){ const R=ROOMS[id]; if(!R) return; const {r,f,b}=R; selId=id; route=null;
   const i=FLOORS.indexOf(f); if(i!==fi){ fi=i; vb=null; drawFloors(); }
   draw(); if(recenter||true) focus(b.cx,b.cy,Math.max(900,Math.min(f.w*.45,Math.max(b.w,b.h)*7)));
   sc.textContent='';
   const ps=fac(id);
   sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill',text:T[lang].floor[f.key]}), r.num?h('span',{class:'pill num',text:r.num}):null, r.cap?h('span',{class:'pill',text:t('seats')(r.cap)}):null),
     h('h2',{text:ps.length?pname(ps[0]):rname(r)}), ps.length?h('p',{class:'sub',text:rname(r)}):null);
-  // directions hint
-  const hereF=here.floor, targetF=f.key; let msg;
-  if(hereF===targetF) msg=t('same'); else msg=(fIdx(targetF)>fIdx(hereF)?t('up'):t('down'))(T[lang].floor[targetF]);
-  sc.append(h('div',{class:'hint'}, h('span',{class:'ico',html:icon(hereF===targetF?'walk':'elev',18)}), h('span',{text:msg})));
+  // directions
+  if(note) sc.append(h('div',{class:'hint'}, h('span',{class:'ico',html:icon('route',18)}), h('span',{text:note})));
+  if(ROUTABLE.has(f.key)) sc.append(h('button',{class:'cta',type:'button',onclick:()=>startRoute(id)}, h('span',{html:icon('route',22)}),
+      h('span',{}, h('div',{text:t('directions')}), h('small',{style:'opacity:.85;font-weight:400',text: here? t('starting')(hereLabel()) : t('setFirst')}))));
+  else sc.append(h('div',{class:'hint'}, h('span',{class:'ico',html:icon('elev',18)}), h('span',{text:t('soon')})));
   ps.forEach(p=>{ const other=lang==='ar'?p.name_en:p.name_ar; const title=lang==='ar'?(p.title_ar||p.title_en):(p.title_en||p.title_ar);
     const base=(/^(https?:\/\/uqu\.edu\.sa\/(?:en\/)?[^\/?#]+)/i.exec(p.url||'')||[])[1];
     const initials=(pname(p).replace(/^(د\.|dr\.?)\s*/i,'').trim()[0]||'?');
@@ -1263,7 +1573,7 @@ function openRoom(id, recenter){ const R=ROOMS[id]; if(!R) return; const {r,f,b}
       h('div',{class:'links'}, p.url?h('a',{class:'p',href:p.url,target:'_blank',rel:'noopener noreferrer',text:t('profile')}):null, base?h('a',{href:base+'/App/OfficeHours',target:'_blank',rel:'noopener noreferrer',text:t('hours')}):null)))); });
   if(!ps.length && r.cat==='office') sc.append(h('p',{class:'empty',text:t('noFac')}));
   if(r.sched) sc.append(h('a',{class:'cta',href:r.sched,target:'_blank',rel:'noopener noreferrer'}, h('span',{html:icon('cal',22)}), h('span',{}, h('div',{text:t('sched')}), h('small',{style:'opacity:.8;font-weight:400',text:t('schedSub')})), h('span',{class:'g',text:lang==='ar'?'↖':'↗'})));
-  sc.append(h('button',{class:'cta alt',type:'button',style:'width:100%;border:0',onclick:backHere}, h('span',{html:icon('here',22),style:'color:var(--here)'}), h('span',{text:t('back')})));
+  sc.append(h('button',{class:'cta alt',type:'button',onclick:backHere}, h('span',{html:icon('here',22),style:'color:var(--here)'}), h('span',{text:here?t('back'):t('setLoc')})));
   setSheet('half'); }
 
 function showChip(c){ hits=new Set(); const ids=Object.keys(ROOMS).filter(id=>c.test(ROOMS[id].r,id)); ids.forEach(id=>hits.add(id));
@@ -1285,7 +1595,7 @@ const norm=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[ً-ٰٟ]/g,'').r
 let st; q.addEventListener('input',()=>{ qc.hidden=!q.value; clearTimeout(st); st=setTimeout(search,120); });
 qc.onclick=()=>{ q.value=''; qc.hidden=true; clearHits(); };
 q.addEventListener('focus',()=>{ if(window.innerWidth<900) setSheet('half'); });
-function search(){ const s=norm(q.value); chipOn=null; drawChips(); if(!s){ hits=new Set(); home(); return; }
+function search(){ const s=norm(q.value); chipOn=null; drawChips(); if(!s){ hits=new Set(); home(); return; } route=null;
   const out=[];
   for(const id in ROOMS){ const {r,f}=ROOMS[id]; if(['stair','elev','vest','void'].includes(r.cat) || (r.cat==='entry'&&!r.ar)) continue;
     const ps=fac(id); const hay=[r.num, (r.num||'').replace(f.prefix,''), r.en, r.ar, ...ps.flatMap(p=>[p.name_ar,p.name_en,p.dept,p.email])].map(norm);
@@ -1297,18 +1607,19 @@ function search(){ const s=norm(q.value); chipOn=null; drawChips(); if(!s){ hits
   if(ids.length===1) openRoom(ids[0],true); }
 q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ q.blur(); } });
 
-function backHere(){ selId=null; hits=new Set(); chipOn=null; q.value=''; qc.hidden=true; drawChips();
-  if(fi!==hereIdx){ fi=hereIdx; drawFloors(); } draw(); focus(here.x,here.y,1100); home(); setSheet('peek'); }
+function backHere(){ if(!here){ startPick(null); return; } selId=null; route=null; hits=new Set(); chipOn=null; q.value=''; qc.hidden=true; drawChips();
+  if(fi!==fIdx(here.floor)){ fi=fIdx(here.floor); drawFloors(); } draw(); focus(here.x,here.y,1100); home(); setSheet('peek'); }
 document.getElementById('locate').onclick=backHere;
 
 // ---------- language
 function applyLang(){ document.documentElement.lang=lang; document.documentElement.dir=lang==='ar'?'rtl':'ltr';
   q.placeholder=t('q'); document.getElementById('lang').textContent=t('lang'); document.getElementById('proto').textContent=t('proto');
-  drawChips(); drawFloors(); if(selId) openRoom(selId,false); else if(q.value) search(); else home(); }
+  drawChips(); drawFloors(); if(picking) pickView(); else if(route) routeView(); else if(selId) openRoom(selId,false); else if(q.value) search(); else home(); }
 document.getElementById('lang').onclick=()=>{ lang=lang==='ar'?'en':'ar'; try{ localStorage.setItem('ccw-lang',lang); }catch(e){} applyLang(); };
 
 // ---------- boot: open at "you are here"
-applyLang(); focus(here.x,here.y,1100); setSheet('peek');
+applyLang(); if(here) focus(here.x,here.y,1100); else fitFloor(); setSheet('peek');
+setTimeout(()=>{ ROUTABLE.forEach(k=>net(k)); if(DEBUG) draw(); },300);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ draw(); });
 })();
 </script>
