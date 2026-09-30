@@ -1,0 +1,1312 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>College of Computing Wayfinder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#E9EFEC; --paper:#F4F7F5; --walk:#FFFFFF; --ink:#16232A; --muted:#617078; --line:#DCE3E1;
+  --sheet:#FFFFFF; --sheet-2:#F3F6F5; --shadow:0 -6px 30px rgba(16,40,44,.16); --float:0 6px 20px rgba(16,40,44,.16);
+  --accent:#0B7A75; --accent-ink:#FFFFFF; --accent-soft:#DDF1EF; --warm:#F2A93B; --warm-ink:#5E3C00; --here:#2F6BFF;
+  --map-ink:#2A3A42; --map-stroke:rgba(20,40,50,.16);
+  --c-office:#E8ECF4; --c-lab:#D3E7FA; --c-class:#E5DEFA; --c-lecture:#DAD0F7; --c-aud:#F7D8E5; --c-library:#CDEEDC;
+  --c-prayer:#FBEABD; --c-court:#DDEFD0; --c-svc:#E3E6E8; --c-wc:#FFDFBD; --c-stair:#D2EED5; --c-elev:#FAD2CE;
+  --c-meet:#FCE5CE; --c-fac:#FBE0A2; --c-roof:#EEF1F2;
+  --font:'Readex Pro','Segoe UI',Tahoma,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1618; --paper:#131D20; --walk:#1E2B2F; --ink:#E6EEF0; --muted:#94A6AD; --line:#27363B;
+  --sheet:#172226; --sheet-2:#1E2B30; --shadow:0 -6px 30px rgba(0,0,0,.5); --float:0 6px 20px rgba(0,0,0,.45);
+  --accent:#4FC7BE; --accent-ink:#062724; --accent-soft:#16383A; --warm:#F2B55A; --warm-ink:#2E1D00; --here:#6E9BFF;
+  --map-ink:#D8E3E6; --map-stroke:rgba(255,255,255,.10);
+  --c-office:#233038; --c-lab:#1B3347; --c-class:#2C2745; --c-lecture:#322859; --c-aud:#462536; --c-library:#1A3B2E;
+  --c-prayer:#44391A; --c-court:#20351C; --c-svc:#252C30; --c-wc:#4A3218; --c-stair:#1D3A24; --c-elev:#4A2220;
+  --c-meet:#44301C; --c-fac:#5B4516; --c-roof:#1A2427;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1618; --paper:#131D20; --walk:#1E2B2F; --ink:#E6EEF0; --muted:#94A6AD; --line:#27363B;
+  --sheet:#172226; --sheet-2:#1E2B30; --shadow:0 -6px 30px rgba(0,0,0,.5); --float:0 6px 20px rgba(0,0,0,.45);
+  --accent:#4FC7BE; --accent-ink:#062724; --accent-soft:#16383A; --warm:#F2B55A; --warm-ink:#2E1D00; --here:#6E9BFF;
+  --map-ink:#D8E3E6; --map-stroke:rgba(255,255,255,.10);
+  --c-office:#233038; --c-lab:#1B3347; --c-class:#2C2745; --c-lecture:#322859; --c-aud:#462536; --c-library:#1A3B2E;
+  --c-prayer:#44391A; --c-court:#20351C; --c-svc:#252C30; --c-wc:#4A3218; --c-stair:#1D3A24; --c-elev:#4A2220;
+  --c-meet:#44301C; --c-fac:#5B4516; --c-roof:#1A2427;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------- map */
+#map{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;background:var(--paper);user-select:none;-webkit-user-select:none}
+.r{stroke:var(--map-stroke);stroke-width:2;stroke-linejoin:round;cursor:pointer}
+.r.office{fill:var(--c-office)}.r.lab{fill:var(--c-lab)}.r.class{fill:var(--c-class)}.r.lecture{fill:var(--c-lecture)}.r.aud{fill:var(--c-aud)}
+.r.library{fill:var(--c-library)}.r.prayer{fill:var(--c-prayer)}.r.court{fill:var(--c-court)}.r.svc{fill:var(--c-svc)}.r.wc,.r.vest{fill:var(--c-wc)}
+.r.stair{fill:var(--c-stair)}.r.elev{fill:var(--c-elev)}.r.meet{fill:var(--c-meet)}.r.entry{fill:var(--walk);stroke:none}.r.fac{fill:var(--c-fac)}
+.r.void{fill:transparent;stroke:var(--map-stroke);stroke-dasharray:10 8;cursor:default}
+.r.sel{stroke:var(--accent);stroke-width:8}
+.r.hit{stroke:var(--accent);stroke-width:6}
+.r.dim{opacity:.35}
+.walk{fill:var(--walk)}
+.roof{fill:var(--c-roof)}
+.t{pointer-events:none;fill:var(--map-ink);text-anchor:middle;dominant-baseline:central;font-family:var(--font)}
+.t.n{font-weight:500;opacity:.75}
+.ic{pointer-events:none}
+.here-pulse{fill:var(--here);opacity:.25;transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:.45}100%{transform:scale(1.6);opacity:0}}
+
+/* ---------- floating chrome */
+.top{position:fixed;inset-inline:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none;z-index:10}
+.top > *{pointer-events:auto}
+.searchrow{display:flex;gap:8px;align-items:center}
+.search{flex:1;display:flex;align-items:center;gap:10px;height:52px;border-radius:26px;background:var(--sheet);box-shadow:var(--float);padding-inline:18px 8px}
+.search svg{flex:none;color:var(--muted)}
+.search input{flex:1;min-width:0;border:0;background:none;font-size:16px;outline:none;height:100%}
+.search input::placeholder{color:var(--muted)}
+.clear{border:0;background:var(--sheet-2);width:34px;height:34px;border-radius:50%;font-size:18px;line-height:1;color:var(--muted)}
+.round{flex:none;width:52px;height:52px;border-radius:50%;border:0;background:var(--sheet);box-shadow:var(--float);font-weight:700;font-size:14px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-inline:-12px;padding-inline:12px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:7px;height:40px;padding-inline:14px 16px;border-radius:20px;border:0;background:var(--sheet);box-shadow:var(--float);font-size:14px;font-weight:500;white-space:nowrap}
+.chip .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.floors{position:fixed;inset-inline-end:12px;top:calc(env(safe-area-inset-top,0px) + 150px);display:flex;flex-direction:column;background:var(--sheet);border-radius:18px;box-shadow:var(--float);padding:5px;gap:4px;z-index:9}
+.floors button{width:46px;height:46px;border-radius:14px;border:0;background:none;font-weight:700;font-size:17px;color:var(--muted);position:relative}
+.floors button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.floors .you{position:absolute;inset-inline-start:-4px;top:-2px;width:12px;height:12px;border-radius:50%;background:var(--here);border:2px solid var(--sheet)}
+.floors small{display:block;font-size:10px;text-align:center;color:var(--muted);padding-top:2px}
+.locate{position:fixed;inset-inline-end:12px;z-index:9;width:52px;height:52px;border-radius:50%;border:0;background:var(--sheet);box-shadow:var(--float);display:grid;place-items:center;color:var(--here);transition:bottom .25s}
+
+/* ---------- bottom sheet */
+.sheet{position:fixed;inset-inline:0;bottom:0;z-index:20;background:var(--sheet);border-radius:24px 24px 0 0;box-shadow:var(--shadow);height:88vh;height:88dvh;transform:translateY(calc(100% - var(--peek,190px)));transition:transform .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.dragging{transition:none}
+.grab{flex:none;padding:10px 0 6px;display:grid;place-items:center;cursor:grab;touch-action:none}
+.grab i{width:44px;height:5px;border-radius:3px;background:var(--line)}
+.sc{flex:1;overflow:auto;padding:4px 18px 24px;overscroll-behavior:contain}
+.sheet h2{font-size:21px;line-height:1.3;margin:0;font-weight:700;text-wrap:balance}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.pillrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.pill{font-size:12px;font-weight:600;border-radius:12px;padding:2px 10px;background:var(--sheet-2);color:var(--muted)}
+.pill.num{font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate;color:var(--ink)}
+.pill.here{background:var(--here);color:#fff}
+.sec{margin-top:18px}
+.sec h3{font-size:13px;font-weight:600;color:var(--muted);margin:0 0 8px}
+.list{display:flex;flex-direction:column;gap:2px}
+.item{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:0;background:none;padding:10px 6px;border-radius:14px}
+.item:active,.item:hover{background:var(--sheet-2)}
+.item .ico{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.item .tx{flex:1;min-width:0}
+.item b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item small{color:var(--muted);font-size:13px}
+.item .chev{color:var(--muted);font-size:18px}
+.hint{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);border-radius:16px;padding:12px 14px;margin-top:14px;font-size:14px}
+.hint .ico{flex:none;width:32px;height:32px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.cta{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--accent-ink);background:var(--accent);border-radius:16px;padding:14px 16px;margin-top:12px;font-weight:600}
+.cta.alt{background:var(--sheet-2);color:var(--ink)}
+.cta span.g{margin-inline-start:auto;font-size:18px}
+.person{background:var(--sheet-2);border-radius:18px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:flex-start}
+.avatar{flex:none;width:48px;height:48px;border-radius:50%;background:var(--warm);color:var(--warm-ink);display:grid;place-items:center;font-weight:700;font-size:18px}
+.person h4{margin:0;font-size:16px;line-height:1.35}
+.person p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.person .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.person .links a{font-size:13px;font-weight:600;text-decoration:none;border-radius:12px;padding:7px 12px;background:var(--sheet);color:var(--accent)}
+.person .links a.p{background:var(--accent);color:var(--accent-ink)}
+.empty{color:var(--muted);padding:12px 0}
+.proto{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 126px);inset-inline-start:12px;font-size:11px;font-weight:600;background:var(--warm);color:var(--warm-ink);border-radius:10px;padding:2px 8px;pointer-events:none}
+
+/* ---------- wide screens: sheet becomes a floating side card */
+@media (min-width: 900px){
+  .top{inset-inline-end:auto;width:440px}
+  .sheet{inset-inline-start:12px;inset-inline-end:auto;width:420px;top:176px;bottom:12px;height:auto;border-radius:24px;transform:none!important}
+  .grab{display:none}
+  .locate{bottom:24px!important}
+  .proto{top:auto;bottom:18px;inset-inline-start:auto;inset-inline-end:80px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important} }
+</style>
+
+<svg id="map" xmlns="http://www.w3.org/2000/svg" aria-label="Floor map"></svg>
+
+<div class="top">
+  <div class="searchrow">
+    <label class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input id="q" type="search" autocomplete="off" enterkeyhint="search">
+      <button class="clear" id="qclear" type="button" aria-label="Clear" hidden>×</button>
+    </label>
+    <button class="round" id="lang" type="button">EN</button>
+  </div>
+  <div class="chips" id="chips"></div>
+</div>
+
+<div class="floors" id="floors" role="tablist"></div>
+<button class="locate" id="locate" type="button" aria-label="You are here">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4" fill="currentColor"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path><circle cx="12" cy="12" r="8"></circle></svg>
+</button>
+
+<div class="sheet" id="sheet">
+  <div class="grab" id="grab" aria-hidden="true"><i></i></div>
+  <div class="sc" id="sc"></div>
+</div>
+<div class="proto" id="proto"></div>
+
+<script>
+window.FLOORS=[{"key":"G","en":"Ground Floor","ar":"الطابق الأرضي","prefix":"12-0.","w":3795,"h":3585,"rooms":[{"id":"M-001","num":"","en":"","ar":"","cat":"stair","poly":[[105,1230],[261,1230],[261,1314],[105,1314]]},{"id":"M-002","num":"12-0.063","en":"Storage","ar":"مستودع","cat":"svc","poly":[[99,1320],[261,1320],[261,1440],[99,1440]]},{"id":"M-003","num":"12-0.061","en":"Office","ar":"مكتب","cat":"office","poly":[[309,1281],[519,1281],[519,1386],[309,1386]]},{"id":"M-004","num":"12-0.060","en":"Office","ar":"مكتب","cat":"office","poly":[[525,1281],[726,1281],[726,1386],[525,1386]]},{"id":"M-005","num":"12-0.052-01","en":"Office","ar":"مكتب","cat":"office","poly":[[633,1170],[729,1170],[729,1281],[633,1281]]},{"id":"M-006","num":"12-0.066-01","en":"Office","ar":"مكتب","cat":"office","poly":[[120,1449],[219,1449],[219,1545],[120,1545]]},{"id":"M-007","num":"12-0.065-01","en":"Office","ar":"مكتب","cat":"office","poly":[[219,1449],[315,1449],[315,1545],[219,1545]]},{"id":"M-008","num":"12-0.066","en":"Lab","ar":"معمل","cat":"lab","poly":[[96,1545],[315,1545],[315,1821],[96,1821]]},{"id":"M-009","num":"12-0.067","en":"Lab","ar":"معمل","cat":"lab","poly":[[96,1821],[315,1821],[315,2079],[96,2079]]},{"id":"M-010","num":"12-0.065","en":"Lab","ar":"معمل","cat":"lab","poly":[[321,1449],[639,1449],[639,1746],[321,1746]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2818","cap":25},{"id":"M-011","num":"12-0.068","en":"Lab","ar":"معمل","cat":"lab","poly":[[321,1890],[639,1890],[639,2184],[321,2184]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2937","cap":25},{"id":"M-012","num":"12-0.067-01","en":"Office","ar":"مكتب","cat":"office","poly":[[120,2085],[219,2085],[219,2184],[120,2184]]},{"id":"M-013","num":"12-0.068-01","en":"Office","ar":"مكتب","cat":"office","poly":[[219,2085],[315,2085],[315,2184],[219,2184]]},{"id":"M-014","num":"12-0.072","en":"Office","ar":"مكتب","cat":"office","poly":[[309,2256],[519,2256],[519,2355],[309,2355]]},{"id":"M-015","num":"12-0.073","en":"Office","ar":"مكتب","cat":"office","poly":[[525,2256],[726,2256],[726,2355],[525,2355]]},{"id":"M-016","num":"12-0.057-01","en":"Office","ar":"مكتب","cat":"office","poly":[[633,2355],[729,2355],[729,2466],[633,2466]]},{"id":"M-017","num":"12-0.070","en":"","ar":"","cat":"svc","poly":[[96,2184],[258,2184],[258,2235],[153,2235],[153,2316],[96,2316]]},{"id":"M-018","num":"","en":"","ar":"","cat":"elev","poly":[[153,2235],[258,2235],[258,2316],[153,2316]]},{"id":"M-019","num":"","en":"","ar":"","cat":"stair","poly":[[105,2319],[261,2319],[261,2406],[105,2406]]},{"id":"M-020","num":"12-0.052","en":"Lab","ar":"معمل","cat":"lab","poly":[[690,1065],[960,1065],[960,1521],[729,1521],[729,1191],[690,1191]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2817","cap":20},{"id":"M-021","num":"12-0.051","en":"Lab","ar":"معمل","cat":"lab","poly":[[960,1065],[1230,1065],[1230,1191],[1155,1191],[1155,1521],[960,1521]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2816","cap":21},{"id":"M-022","num":"12-0.051-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1155,1191],[1275,1191],[1275,1350],[1155,1350]]},{"id":"M-023","num":"12-0.038-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1275,1191],[1395,1191],[1395,1350],[1275,1350]]},{"id":"M-024","num":"","en":"","ar":"","cat":"stair","poly":[[1170,1350],[1386,1350],[1386,1515],[1170,1515]]},{"id":"M-025","num":"12-0.057","en":"Lab","ar":"معمل","cat":"lab","poly":[[690,2574],[960,2574],[960,2118],[729,2118],[729,2448],[690,2448]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2938","cap":25},{"id":"M-026","num":"12-0.058","en":"Lab","ar":"معمل","cat":"lab","poly":[[960,2574],[1230,2574],[1230,2448],[1155,2448],[1155,2118],[960,2118]]},{"id":"M-027","num":"12-0.058-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1155,2448],[1275,2448],[1275,2289],[1155,2289]]},{"id":"M-028","num":"12-0.048-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1275,2448],[1395,2448],[1395,2289],[1275,2289]]},{"id":"M-029","num":"","en":"","ar":"","cat":"stair","poly":[[1170,2289],[1386,2289],[1386,2124],[1170,2124]]},{"id":"M-030","num":"12-0.038","en":"Lab","ar":"معمل","cat":"lab","poly":[[1326,1065],[1596,1065],[1596,1521],[1395,1521],[1395,1191],[1326,1191]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2815","cap":21},{"id":"M-031","num":"12-0.037","en":"Lab","ar":"معمل","cat":"lab","poly":[[1596,1065],[1866,1065],[1866,1191],[1791,1191],[1791,1521],[1596,1521]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2814","cap":21},{"id":"M-032","num":"12-0.037-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1791,1191],[1911,1191],[1911,1350],[1791,1350]]},{"id":"M-033","num":"12-0.029-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1911,1191],[2031,1191],[2031,1350],[1911,1350]]},{"id":"M-034","num":"","en":"","ar":"","cat":"stair","poly":[[1806,1350],[2022,1350],[2022,1515],[1806,1515]]},{"id":"M-035","num":"12-0.048","en":"Lab","ar":"معمل","cat":"lab","poly":[[1326,2574],[1596,2574],[1596,2118],[1395,2118],[1395,2448],[1326,2448]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2940","cap":21},{"id":"M-036","num":"12-0.049","en":"Lab","ar":"معمل","cat":"lab","poly":[[1596,2574],[1866,2574],[1866,2448],[1791,2448],[1791,2118],[1596,2118]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2941","cap":31},{"id":"M-037","num":"12-0.049-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1791,2448],[1911,2448],[1911,2289],[1791,2289]]},{"id":"M-038","num":"12-0.033-01","en":"Office","ar":"مكتب","cat":"office","poly":[[1911,2448],[2031,2448],[2031,2289],[1911,2289]]},{"id":"M-039","num":"","en":"","ar":"","cat":"stair","poly":[[1806,2289],[2022,2289],[2022,2124],[1806,2124]]},{"id":"M-040","num":"12-0.029","en":"Lab","ar":"معمل","cat":"lab","poly":[[1965,1065],[2235,1065],[2235,1521],[2034,1521],[2034,1191],[1965,1191]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2813","cap":21},{"id":"M-041","num":"12-0.028","en":"Lab","ar":"معمل","cat":"lab","poly":[[2235,1065],[2505,1065],[2505,1191],[2430,1191],[2430,1521],[2235,1521]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2812","cap":24},{"id":"M-042","num":"12-0.028-01","en":"Office","ar":"مكتب","cat":"office","poly":[[2424,1191],[2550,1191],[2550,1350],[2424,1350]]},{"id":"M-043","num":"12-0.027","en":"Office","ar":"مكتب","cat":"office","poly":[[2424,1350],[2550,1350],[2550,1521],[2424,1521]]},{"id":"M-044","num":"12-0.033","en":"Lab","ar":"معمل","cat":"lab","poly":[[1965,2574],[2235,2574],[2235,2118],[2034,2118],[2034,2448],[1965,2448]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2942","cap":24},{"id":"M-045","num":"12-0.034","en":"Lab","ar":"معمل","cat":"lab","poly":[[2235,2574],[2505,2574],[2505,2448],[2430,2448],[2430,2118],[2235,2118]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2943","cap":24},{"id":"M-046","num":"12-0.034-01","en":"Office","ar":"مكتب","cat":"office","poly":[[2424,2448],[2550,2448],[2550,2289],[2424,2289]]},{"id":"M-047","num":"12-0.035","en":"Electrical","ar":"كهرباء","cat":"office","poly":[[2424,2289],[2550,2289],[2550,2118],[2424,2118]]},{"id":"M-048","num":"","en":"","ar":"","cat":"stair","poly":[[2556,1275],[2640,1275],[2640,1515],[2556,1515]]},{"id":"M-049","num":"12-0.025","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[2646,1281],[2766,1281],[2766,1515],[2646,1515]]},{"id":"M-050","num":"12-0.024","en":"Prayer Room","ar":"مصلى","cat":"prayer","poly":[[2769,1281],[2970,1281],[2970,1515],[2769,1515]]},{"id":"M-051","num":"","en":"","ar":"","cat":"elev","poly":[[2556,2133],[2649,2133],[2649,2199],[2556,2199]]},{"id":"M-052","num":"12-0.035","en":"Electrical","ar":"غرفة الكهرباء","cat":"svc","poly":[[2655,2124],[2970,2124],[2970,2355],[2655,2355]]},{"id":"M-053","num":"12-0.053","en":"Courtyard","ar":"فناء","cat":"court","poly":[[735,1596],[1119,1596],[1119,2040],[735,2040]]},{"id":"M-054","num":"","en":"","ar":"","cat":"vest","poly":[[1125,1590],[1209,1590],[1209,1710],[1125,1710]]},{"id":"M-055","num":"12-0.054","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1125,1710],[1260,1710],[1260,1926],[1125,1926]]},{"id":"M-056","num":"","en":"","ar":"","cat":"vest","poly":[[1125,1926],[1209,1926],[1209,2046],[1125,2046]]},{"id":"M-057","num":"12-0.055","en":"","ar":"","cat":"svc","poly":[[1209,1590],[1284,1590],[1284,1710],[1209,1710]]},{"id":"M-058","num":"12-0.056","en":"","ar":"","cat":"svc","poly":[[1209,1926],[1284,1926],[1284,2046],[1209,2046]]},{"id":"M-059","num":"","en":"Presentation Room","ar":"قاعة العروض","cat":"court","poly":[[1365,1596],[1749,1596],[1749,2040],[1365,2040]]},{"id":"M-060","num":"","en":"","ar":"","cat":"vest","poly":[[1755,1590],[1839,1590],[1839,1710],[1755,1710]]},{"id":"M-061","num":"12-0.040","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1755,1710],[1890,1710],[1890,1926],[1755,1926]]},{"id":"M-062","num":"","en":"","ar":"","cat":"vest","poly":[[1755,1926],[1839,1926],[1839,2046],[1755,2046]]},{"id":"M-063","num":"12-0.041","en":"Janitor","ar":"النظافة","cat":"svc","poly":[[1839,1590],[1941,1590],[1941,1710],[1839,1710]]},{"id":"M-064","num":"12-0.042","en":"Storage","ar":"مستودع","cat":"svc","poly":[[1941,1590],[2034,1590],[2034,1710],[1941,1710]]},{"id":"M-065","num":"12-0.043","en":"Office","ar":"مكتب","cat":"office","poly":[[1914,1710],[2034,1710],[2034,1821],[1914,1821]]},{"id":"M-066","num":"12-0.044","en":"Office","ar":"مكتب","cat":"office","poly":[[1914,1821],[2034,1821],[2034,1926],[1914,1926]]},{"id":"M-067","num":"12-0.046","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[1839,1926],[1941,1926],[1941,2046],[1839,2046]]},{"id":"M-068","num":"12-0.045","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[1941,1926],[2034,1926],[2034,2046],[1941,2046]]},{"id":"M-069","num":"12-0.030","en":"Courtyard","ar":"فناء","cat":"court","poly":[[2115,1596],[2379,1596],[2379,2040],[2115,2040]]},{"id":"M-070","num":"12-0.031","en":"Library","ar":"المكتبة","cat":"library","poly":[[2385,1590],[2679,1590],[2679,1725],[2727,1725],[2727,1590],[2754,1590],[2754,2046],[2385,2046]]},{"id":"M-071","num":"","en":"","ar":"","cat":"stair","poly":[[2679,1590],[2727,1590],[2727,1725],[2679,1725]]},{"id":"M-072","num":"12-0.031","en":"","ar":"","cat":"library","poly":[[2754,1590],[2985,1590],[2985,1779],[2754,1779]]},{"id":"M-073","num":"12-0.031","en":"Library Entry","ar":"مدخل المكتبة","cat":"library","poly":[[2754,1779],[2985,1779],[2985,1854],[2754,1854]]},{"id":"M-074","num":"12-0.031","en":"","ar":"","cat":"library","poly":[[2754,1854],[2877,1854],[2877,1926],[2754,1926]]},{"id":"M-075","num":"12-0.031","en":"","ar":"","cat":"library","poly":[[2877,1854],[2985,1854],[2985,1926],[2877,1926]]},{"id":"M-076","num":"12-0.031-01","en":"","ar":"","cat":"library","poly":[[2754,1926],[2877,1926],[2877,2046],[2754,2046]]},{"id":"M-077","num":"12-0.031","en":"","ar":"","cat":"library","poly":[[2877,1926],[2985,1926],[2985,2046],[2877,2046]]},{"id":"M-078","num":"","en":"","ar":"","cat":"stair","poly":[[3060,1620],[3210,1620],[3210,2010],[3060,2010]]},{"id":"M-079","num":"12-0.004","en":"Projection","ar":"غرفة العرض","cat":"svc","poly":[[3186,51],[3411,51],[3411,195],[3186,195]]},{"id":"M-080","num":"12-0.004","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[3024,144],[3141,144],[3141,291],[3024,291]]},{"id":"M-081","num":"12-0.004","en":"Storage","ar":"مستودع","cat":"svc","poly":[[3456,144],[3570,144],[3570,291],[3456,291]]},{"id":"M-082","num":"12-0.004","en":"Auditorium","ar":"المسرح","cat":"aud","poly":[[3024,291],[3141,291],[3186,195],[3411,195],[3456,291],[3564,291],[3564,528],[3024,528]]},{"id":"M-083","num":"12-0.004","en":"","ar":"","cat":"svc","poly":[[3024,528],[3564,528],[3564,675],[3024,675]]},{"id":"M-084","num":"12-0.005","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[2985,750],[3141,750],[3141,921],[2985,921]]},{"id":"M-085","num":"12-0.005","en":"","ar":"","cat":"svc","poly":[[2985,921],[3051,921],[3051,966],[2985,966]]},{"id":"M-086","num":"","en":"","ar":"","cat":"stair","poly":[[3015,966],[3180,966],[3180,1041],[3015,1041]]},{"id":"M-087","num":"12-0.007","en":"","ar":"","cat":"svc","poly":[[3186,960],[3246,960],[3246,1041],[3186,1041]]},{"id":"M-088","num":"12-0.008","en":"Auditorium","ar":"المسرح","cat":"lecture","poly":[[2976,1044],[3240,1044],[3240,1506],[2976,1506]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/4084","cap":88},{"id":"M-089","num":"12-0.003","en":"Lecture Hall","ar":"قاعة محاضرات","cat":"lecture","poly":[[3345,969],[3624,969],[3624,1389],[3345,1389]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2770","cap":89},{"id":"M-090","num":"12-0.002","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[3345,1389],[3636,1389],[3636,1506],[3345,1506]]},{"id":"M-091","num":"12-0.009","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,2130],[3246,2130],[3246,2295],[2976,2295]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2771"},{"id":"M-092","num":"12-0.010","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,2295],[3246,2295],[3246,2460],[2976,2460]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2777","cap":24},{"id":"M-093","num":"12-0.011","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,2466],[3246,2466],[3246,2589],[2976,2589]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2778","cap":28},{"id":"M-094","num":"12-0.022","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[3351,2130],[3624,2130],[3624,2241],[3351,2241]]},{"id":"M-095","num":"12-0.021","en":"Lecture Hall","ar":"قاعة محاضرات","cat":"lecture","poly":[[3381,2244],[3624,2244],[3624,2670],[3381,2670]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2844","cap":89},{"id":"M-096","num":"","en":"","ar":"","cat":"stair","poly":[[2976,2589],[3186,2589],[3186,2670],[2976,2670]]},{"id":"M-097","num":"12-0.012","en":"","ar":"","cat":"svc","poly":[[3186,2589],[3246,2589],[3246,2670],[3186,2670]]},{"id":"M-098","num":"","en":"","ar":"","cat":"svc","poly":[[2976,2673],[3051,2673],[3051,2721],[2976,2721]]},{"id":"M-099","num":"12-0.014","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[3051,2673],[3141,2673],[3141,2889],[2976,2889],[2976,2721],[3051,2721]]},{"id":"M-100","num":"12-0.015","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,2889],[3246,2889],[3246,3096],[2976,3096]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2779","cap":49},{"id":"M-101","num":"12-0.020","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3351,2889],[3624,2889],[3624,3096],[3351,3096]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2784","cap":50},{"id":"M-102","num":"12-0.016","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,3096],[3246,3096],[3246,3309],[2976,3309]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2780","cap":49},{"id":"M-103","num":"12-0.019","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3351,3096],[3624,3096],[3624,3309],[3351,3309]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2783","cap":50},{"id":"M-104","num":"12-0.017","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[2976,3309],[3294,3309],[3294,3531],[2976,3531]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2781","cap":49},{"id":"M-105","num":"12-0.018","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3294,3309],[3624,3309],[3624,3531],[3294,3531]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2782","cap":53}],"circ":[[[261,1314],[309,1314],[309,1446],[261,1446]],[[309,1386],[735,1386],[735,1449],[309,1449]],[[321,1746],[639,1746],[639,1890],[321,1890]],[[639,1386],[735,1386],[735,2256],[639,2256]],[[309,2184],[735,2184],[735,2256],[309,2256]],[[258,2235],[309,2235],[309,2325],[258,2325]],[[690,1521],[3144,1521],[3144,1596],[690,1596]],[[690,2040],[3144,2040],[3144,2121],[690,2121]],[[1284,1590],[1365,1590],[1365,2046],[1284,2046]],[[2034,1590],[2115,1590],[2115,2046],[2034,2046]],[[2970,675],[3564,675],[3564,750],[2970,750]],[[3141,750],[3519,750],[3519,966],[3141,966]],[[3246,960],[3351,960],[3351,1530],[3246,1530]],[[2970,1506],[3144,1506],[3144,2130],[2970,2130]],[[2550,2199],[2655,2199],[2655,2355],[2550,2355]],[[3246,2121],[3351,2121],[3351,3309],[3246,3309]],[[3141,2670],[3519,2670],[3519,2889],[3141,2889]],[[3144,1506],[3495,1506],[3495,2130],[3144,2130]],[[3141,750],[3519,750],[3519,966],[3141,966]],[[3141,2670],[3519,2670],[3519,2889],[3141,2889]]],"marks":[{"t":"entrance","main":true,"x":3531,"y":1818},{"t":"entrance","main":false,"x":3561,"y":855},{"t":"entrance","main":false,"x":3561,"y":2778},{"t":"entrance","main":false,"x":66,"y":1392},{"t":"entrance","main":false,"x":66,"y":2241},{"t":"info","x":3285,"y":1818}]},{"key":"1","en":"First Floor","ar":"الطابق الأول","prefix":"12-1.","w":3718,"h":3679,"rooms":[{"id":"F1-001","num":"12-1.100","en":"Office","ar":"مكتب","cat":"office","poly":[[650.0,1120.6],[741.0,1120.6],[741.0,1248.0],[650.0,1248.0]]},{"id":"F1-002","num":"12-1.099","en":"Office","ar":"مكتب","cat":"office","poly":[[746.2,1120.6],[833.3,1120.6],[833.3,1248.0],[746.2,1248.0]]},{"id":"F1-003","num":"12-1.098","en":"Office","ar":"مكتب","cat":"office","poly":[[837.2,1120.6],[924.3,1120.6],[924.3,1248.0],[837.2,1248.0]]},{"id":"F1-004","num":"12-1.097","en":"Office","ar":"مكتب","cat":"office","poly":[[929.5,1120.6],[1015.3,1120.6],[1015.3,1248.0],[929.5,1248.0]]},{"id":"F1-005","num":"12-1.096","en":"Office","ar":"مكتب","cat":"office","poly":[[1020.5,1120.6],[1106.3,1120.6],[1106.3,1248.0],[1020.5,1248.0]]},{"id":"F1-006","num":"12-1.095","en":"Office","ar":"مكتب","cat":"office","poly":[[1111.5,1120.6],[1201.2,1120.6],[1201.2,1248.0],[1111.5,1248.0]]},{"id":"F1-007","num":"12-1.094","en":"Office","ar":"مكتب","cat":"office","poly":[[1307.8,1120.6],[1397.5,1120.6],[1397.5,1248.0],[1307.8,1248.0]]},{"id":"F1-008","num":"12-1.062","en":"Office","ar":"مكتب","cat":"office","poly":[[1401.4,1120.6],[1488.5,1120.6],[1488.5,1248.0],[1401.4,1248.0]]},{"id":"F1-009","num":"12-1.061","en":"Office","ar":"مكتب","cat":"office","poly":[[1493.7,1120.6],[1579.5,1120.6],[1579.5,1248.0],[1493.7,1248.0]]},{"id":"F1-010","num":"12-1.060","en":"Office","ar":"مكتب","cat":"office","poly":[[1584.7,1120.6],[1670.5,1120.6],[1670.5,1248.0],[1584.7,1248.0]]},{"id":"F1-011","num":"12-1.059","en":"Office","ar":"مكتب","cat":"office","poly":[[1696.5,1120.6],[1762.8,1120.6],[1762.8,1248.0],[1696.5,1248.0]]},{"id":"F1-012","num":"12-1.058","en":"Office","ar":"مكتب","cat":"office","poly":[[1766.7,1120.6],[1857.7,1120.6],[1857.7,1248.0],[1766.7,1248.0]]},{"id":"F1-013","num":"12-1.057","en":"Office","ar":"مكتب","cat":"office","poly":[[1964.3,1120.6],[2055.3,1120.6],[2055.3,1248.0],[1964.3,1248.0]]},{"id":"F1-014","num":"12-1.031","en":"Office","ar":"مكتب","cat":"office","poly":[[2060.5,1120.6],[2147.6,1120.6],[2147.6,1248.0],[2060.5,1248.0]]},{"id":"F1-015","num":"12-1.030","en":"Office","ar":"مكتب","cat":"office","poly":[[2151.5,1120.6],[2238.6,1120.6],[2238.6,1248.0],[2151.5,1248.0]]},{"id":"F1-016","num":"12-1.029","en":"Office","ar":"مكتب","cat":"office","poly":[[2243.8,1120.6],[2329.6,1120.6],[2329.6,1248.0],[2243.8,1248.0]]},{"id":"F1-017","num":"12-1.028","en":"Office","ar":"مكتب","cat":"office","poly":[[2334.8,1120.6],[2420.6,1120.6],[2420.6,1248.0],[2334.8,1248.0]]},{"id":"F1-018","num":"12-1.027","en":"Office","ar":"مكتب","cat":"office","poly":[[2425.8,1120.6],[2515.5,1120.6],[2515.5,1248.0],[2425.8,1248.0]]},{"id":"F1-019","num":"","en":"","ar":"","cat":"svc","poly":[[1675.7,1140.1],[1695.2,1140.1],[1695.2,1220.7],[1675.7,1220.7]]},{"id":"F1-020","num":"","en":"","ar":"","cat":"svc","poly":[[607.1,1229.8],[646.1,1229.8],[646.1,1248.0],[607.1,1248.0]]},{"id":"F1-021","num":"","en":"","ar":"","cat":"svc","poly":[[2519.4,1229.8],[2559.7,1229.8],[2559.7,1248.0],[2519.4,1248.0]]},{"id":"F1-022","num":"1S10","en":"","ar":"","cat":"stair","poly":[[58.5,1292.2],[254.8,1292.2],[254.8,1372.8],[58.5,1372.8]]},{"id":"F1-023","num":"12-1.124","en":"Office","ar":"مكتب","cat":"office","poly":[[668.2,1311.7],[808.6,1311.7],[808.6,1394.9],[668.2,1394.9]]},{"id":"F1-024","num":"12-1.102","en":"Office","ar":"مكتب","cat":"office","poly":[[813.8,1311.7],[904.8,1311.7],[904.8,1436.5],[813.8,1436.5]]},{"id":"F1-025","num":"12-1.101","en":"Office","ar":"مكتب","cat":"office","poly":[[908.7,1311.7],[1038.7,1311.7],[1038.7,1394.9],[908.7,1394.9]]},{"id":"F1-026","num":"12-1.105","en":"Office","ar":"مكتب","cat":"office","poly":[[1132.3,1311.7],[1251.9,1311.7],[1251.9,1410.5],[1132.3,1410.5]]},{"id":"F1-027","num":"12-1.106","en":"Office","ar":"مكتب","cat":"office","poly":[[1257.1,1311.7],[1375.4,1311.7],[1375.4,1410.5],[1257.1,1410.5]]},{"id":"F1-028","num":"12-1.064","en":"Office","ar":"مكتب","cat":"office","poly":[[1470.3,1311.7],[1580.8,1311.7],[1580.8,1394.9],[1470.3,1394.9]]},{"id":"F1-029","num":"12-1.065","en":"Office","ar":"مكتب","cat":"office","poly":[[1584.7,1311.7],[1695.2,1311.7],[1695.2,1394.9],[1584.7,1394.9]]},{"id":"F1-030","num":"12-1.068","en":"Office","ar":"مكتب","cat":"office","poly":[[1790.1,1311.7],[1908.4,1311.7],[1908.4,1410.5],[1790.1,1410.5]]},{"id":"F1-031","num":"12-1.069","en":"Office","ar":"مكتب","cat":"office","poly":[[1913.6,1311.7],[2033.2,1311.7],[2033.2,1410.5],[1913.6,1410.5]]},{"id":"F1-032","num":"12-1.035","en":"Office","ar":"مكتب","cat":"office","poly":[[2128.1,1311.7],[2256.8,1311.7],[2256.8,1394.9],[2128.1,1394.9]]},{"id":"F1-033","num":"12-1.034","en":"Office","ar":"مكتب","cat":"office","poly":[[2262.0,1311.7],[2353.0,1311.7],[2353.0,1436.5],[2262.0,1436.5]]},{"id":"F1-034","num":"12-1.036","en":"Office","ar":"مكتب","cat":"office","poly":[[2356.9,1313.0],[2505.1,1313.0],[2505.1,1394.9],[2356.9,1394.9]]},{"id":"F1-035","num":"12-1.127","en":"Office","ar":"مكتب","cat":"office","poly":[[263.9,1339.0],[479.7,1339.0],[479.7,1439.1],[263.9,1439.1]]},{"id":"F1-036","num":"12-1.126","en":"Office","ar":"مكتب","cat":"office","poly":[[484.9,1339.0],[604.5,1339.0],[604.5,1439.1],[484.9,1439.1]]},{"id":"F1-037","num":"12-1.024","en":"Mechanical","ar":"غرفة الميكانيكا","cat":"svc","poly":[[2666.3,1339.0],[3000.4,1339.0],[3000.4,1576.9],[2666.3,1576.9]]},{"id":"F1-038","num":"1S05","en":"","ar":"","cat":"stair","poly":[[2579.2,1346.8],[2659.8,1346.8],[2659.8,1574.3],[2579.2,1574.3]]},{"id":"F1-039","num":"12-1.129","en":"Storage","ar":"مستودع","cat":"svc","poly":[[48.1,1379.3],[209.3,1379.3],[209.3,1506.7],[48.1,1506.7]]},{"id":"F1-040","num":"12-1.066","en":"Office","ar":"مكتب","cat":"office","poly":[[1537.9,1400.1],[1628.9,1400.1],[1628.9,1583.4],[1537.9,1583.4]]},{"id":"F1-041","num":"12-1.122","en":"Office","ar":"مكتب","cat":"office","poly":[[668.2,1440.4],[765.7,1440.4],[765.7,1583.4],[668.2,1583.4]]},{"id":"F1-042","num":"12-1.123","en":"Office","ar":"مكتب","cat":"office","poly":[[769.6,1440.4],[867.1,1440.4],[867.1,1583.4],[769.6,1583.4]]},{"id":"F1-043","num":"12-1.103","en":"Office","ar":"مكتب","cat":"office","poly":[[872.3,1440.4],[968.5,1440.4],[968.5,1583.4],[872.3,1583.4]]},{"id":"F1-044","num":"12-1.104","en":"Office","ar":"مكتب","cat":"office","poly":[[973.7,1440.4],[1068.6,1440.4],[1068.6,1583.4],[973.7,1583.4]]},{"id":"F1-045","num":"12-1.063","en":"Office","ar":"مكتب","cat":"office","poly":[[1440.4,1440.4],[1532.7,1440.4],[1532.7,1583.4],[1440.4,1583.4]]},{"id":"F1-046","num":"12-1.067","en":"Office","ar":"مكتب","cat":"office","poly":[[1632.8,1440.4],[1695.2,1440.4],[1695.2,1583.4],[1632.8,1583.4]]},{"id":"F1-047","num":"12-1.032","en":"Office","ar":"مكتب","cat":"office","poly":[[2096.9,1440.4],[2191.8,1440.4],[2191.8,1583.4],[2096.9,1583.4]]},{"id":"F1-048","num":"12-1.033","en":"Office","ar":"مكتب","cat":"office","poly":[[2197.0,1440.4],[2294.5,1440.4],[2294.5,1583.4],[2197.0,1583.4]]},{"id":"F1-049","num":"12-1.037","en":"Office","ar":"مكتب","cat":"office","poly":[[2298.4,1440.4],[2395.9,1440.4],[2395.9,1583.4],[2298.4,1583.4]]},{"id":"F1-050","num":"12-1.038","en":"Office","ar":"مكتب","cat":"office","poly":[[2401.1,1440.4],[2505.1,1440.4],[2505.1,1583.4],[2401.1,1583.4]]},{"id":"F1-051","num":"","en":"","ar":"","cat":"svc","poly":[[1696.5,1466.4],[1725.1,1466.4],[1725.1,1565.2],[1696.5,1565.2]]},{"id":"F1-052","num":"12-1.132-01","en":"Office","ar":"مكتب","cat":"office","poly":[[75.4,1510.6],[171.6,1510.6],[171.6,1608.1],[75.4,1608.1]]},{"id":"F1-053","num":"12-1.131-01","en":"Office","ar":"مكتب","cat":"office","poly":[[175.5,1510.6],[271.7,1510.6],[271.7,1608.1],[175.5,1608.1]]},{"id":"F1-054","num":"12-1.131","en":"Lab","ar":"معمل","cat":"lab","poly":[[276.9,1510.6],[596.7,1510.6],[596.7,1814.8],[276.9,1814.8]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2944","cap":25},{"id":"F1-055","num":"12-1.132","en":"Lab","ar":"معمل","cat":"lab","poly":[[48.1,1613.3],[279.5,1613.3],[279.5,1886.3],[48.1,1886.3]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/3643","cap":21},{"id":"F1-056","num":"12-1.072","en":"Janitor","ar":"النظافة","cat":"svc","poly":[[1842.1,1651.0],[1937.0,1651.0],[1937.0,1774.5],[1842.1,1774.5]]},{"id":"F1-057","num":"12-1.073","en":"Storage","ar":"مستودع","cat":"svc","poly":[[1942.2,1651.0],[2033.2,1651.0],[2033.2,1778.4],[1942.2,1778.4]]},{"id":"F1-058","num":"12-1.040-07","en":"Secretary","ar":"السكرتارية","cat":"office","poly":[[2570.1,1651.0],[2639.0,1651.0],[2639.0,1787.5],[2570.1,1787.5]]},{"id":"F1-059","num":"12-1.040-08","en":"Director","ar":"المدير","cat":"office","poly":[[2403.7,1652.3],[2557.1,1652.3],[2557.1,1787.5],[2403.7,1787.5]]},{"id":"F1-060","num":"12-1.108","en":"Storage","ar":"مستودع","cat":"svc","poly":[[1184.3,1660.1],[1258.4,1660.1],[1258.4,1774.5],[1184.3,1774.5]]},{"id":"F1-061","num":"1S12","en":"","ar":"","cat":"stair","poly":[[2780.7,1660.1],[2893.8,1660.1],[2893.8,1714.7],[2780.7,1714.7]]},{"id":"F1-062","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[708.5,1690.0],[708.5,1764.1],[720.2,1765.4],[720.2,1791.4],[708.5,1792.7],[708.5,1983.8],[720.2,1985.1],[720.2,2009.8],[708.5,2011.1],[708.5,2086.5],[725.4,2087.8],[725.4,2106.0],[800.8,2106.0],[803.4,2093.0],[1059.5,2093.0],[1059.5,2074.8],[1076.4,2073.5],[1076.4,1703.0],[1062.1,1701.7],[1062.1,1682.2],[1023.1,1683.5],[1021.8,1670.5],[829.4,1670.5],[826.8,1682.2],[735.8,1682.2],[734.5,1690.0]]},{"id":"F1-063","num":"12-1.110","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[1365.0,1686.1],[1365.0,1762.8],[1378.0,1765.4],[1378.0,1791.4],[1365.0,1794.0],[1365.0,1982.5],[1378.0,1985.1],[1378.0,2009.8],[1365.0,2013.7],[1365.0,2086.5],[1381.9,2087.8],[1381.9,2106.0],[1458.6,2106.0],[1461.2,2093.0],[1484.6,2093.0],[1488.5,2106.0],[1677.0,2106.0],[1680.9,2093.0],[1695.2,2093.0],[1695.2,2050.1],[1686.1,2039.7],[1686.1,2031.9],[1695.2,2030.6],[1695.2,1747.2],[1686.1,1745.9],[1686.1,1736.8],[1695.2,1726.4],[1695.2,1683.5],[1391.0,1682.2],[1389.7,1686.1]]},{"id":"F1-064","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[2152.8,1682.2],[2151.5,1695.2],[2132.0,1695.2],[2132.0,1765.4],[2143.7,1766.7],[2143.7,1791.4],[2132.0,1792.7],[2132.0,1983.8],[2143.7,1985.1],[2143.7,2009.8],[2132.0,2011.1],[2132.0,2081.3],[2151.5,2081.3],[2152.8,2093.0],[2327.0,2093.0],[2321.8,2056.6],[2336.1,2055.3],[2336.1,1900.6],[2310.1,1900.6],[2301.0,1892.8],[2301.0,1882.4],[2308.8,1875.9],[2336.1,1875.9],[2336.1,1721.2],[2321.8,1719.9],[2327.0,1682.2]]},{"id":"F1-065","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[1714.7,1703.0],[1696.5,1723.8],[1696.5,2052.7],[1714.7,2072.2],[1732.9,2072.2],[1732.9,1703.0]]},{"id":"F1-066","num":"","en":"Tea Room","ar":"غرفة الشاي","cat":"svc","poly":[[2649.4,1719.9],[2698.8,1719.9],[2698.8,1762.8],[2649.4,1762.8]]},{"id":"F1-067","num":"12-1.040-06","en":"Research","ar":"بحث","cat":"office","poly":[[2780.7,1719.9],[2836.6,1719.9],[2836.6,1787.5],[2780.7,1787.5]]},{"id":"F1-068","num":"12-1.040-04","en":"Research","ar":"بحث","cat":"office","poly":[[2956.2,1731.6],[3006.9,1731.6],[3006.9,1787.5],[2956.2,1787.5]]},{"id":"F1-069","num":"12-1.040-05","en":"Research","ar":"بحث","cat":"office","poly":[[2862.6,1732.9],[2930.2,1732.9],[2930.2,1787.5],[2862.6,1787.5]]},{"id":"F1-070","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[1930.5,1783.6],[1930.5,1801.8],[1939.6,1826.5],[1920.1,1827.8],[1920.1,1957.8],[1933.1,1959.1],[1929.2,1990.3],[2022.8,1990.3],[2020.2,1960.4],[2031.9,1959.1],[2031.9,1817.4],[2018.9,1816.1],[2022.8,1783.6]]},{"id":"F1-071","num":"12-1.040","en":"Reading","ar":"قاعة القراءة","cat":"library","poly":[[2570.1,1787.5],[3003.0,1787.5],[3003.0,2042.3],[2570.1,2042.3]]},{"id":"F1-072","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[2483.0,1827.8],[2483.0,1846.0],[2537.6,1873.3],[2549.3,1873.3],[2550.6,1879.8],[2558.4,1883.7],[2584.4,1883.7],[2587.0,1898.0],[2672.8,1940.9],[2691.0,1940.9],[2691.0,1835.6],[2655.9,1839.5],[2654.6,1827.8]]},{"id":"F1-073","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[2446.6,1835.6],[2446.6,1940.9],[2480.4,1937.0],[2481.7,1948.7],[2654.6,1948.7],[2654.6,1930.5],[2579.2,1892.8],[2551.9,1892.8],[2550.6,1878.5],[2464.8,1835.6]]},{"id":"F1-074","num":"12-1.133","en":"Lab","ar":"معمل","cat":"lab","poly":[[48.1,1890.2],[279.5,1890.2],[279.5,2163.2],[48.1,2163.2]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/3863","cap":20},{"id":"F1-075","num":"12-1.134","en":"Lab","ar":"معمل","cat":"lab","poly":[[275.6,1961.7],[596.7,1961.7],[596.7,2264.6],[275.6,2264.6]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/3644","cap":21},{"id":"F1-076","num":"12-1.040-09","en":"Assistant","ar":"مساعد","cat":"office","poly":[[2402.4,1989.0],[2486.9,1989.0],[2486.9,2116.4],[2402.4,2116.4]]},{"id":"F1-077","num":"12-1.040-10","en":"Staff","ar":"أعضاء الهيئة","cat":"office","poly":[[2492.1,1989.0],[2698.8,1989.0],[2698.8,2124.2],[2492.1,2124.2]]},{"id":"F1-078","num":"12-1.040-01","en":"Research","ar":"بحث","cat":"office","poly":[[2753.4,1989.0],[2857.4,1989.0],[2857.4,2056.6],[2753.4,2056.6]]},{"id":"F1-079","num":"12-1.040-03","en":"Research","ar":"بحث","cat":"office","poly":[[2935.4,1989.0],[3006.9,1989.0],[3006.9,2056.6],[2935.4,2056.6]]},{"id":"F1-080","num":"12-1.074","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[1942.2,1994.2],[2033.2,1994.2],[2033.2,2124.2],[1942.2,2124.2]]},{"id":"F1-081","num":"12-1.109","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[1184.3,2002.0],[1258.4,2002.0],[1258.4,2116.4],[1184.3,2116.4]]},{"id":"F1-082","num":"12-1.075","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[1842.1,2002.0],[1937.0,2002.0],[1937.0,2124.2],[1842.1,2124.2]]},{"id":"F1-083","num":"12-1.040-02","en":"Research","ar":"بحث","cat":"office","poly":[[2862.6,2015.0],[2930.2,2015.0],[2930.2,2056.6],[2862.6,2056.6]]},{"id":"F1-084","num":"1S13","en":"","ar":"","cat":"stair","poly":[[2858.7,2074.8],[2895.1,2074.8],[2895.1,2116.4],[2858.7,2116.4]]},{"id":"F1-085","num":"12-1.133-01","en":"Office","ar":"مكتب","cat":"office","poly":[[75.4,2168.4],[171.6,2168.4],[171.6,2264.6],[75.4,2264.6]]},{"id":"F1-086","num":"12-1.134-01","en":"Office","ar":"مكتب","cat":"office","poly":[[175.5,2168.4],[271.7,2168.4],[271.7,2264.6],[175.5,2264.6]]},{"id":"F1-087","num":"12-1.142","en":"Office","ar":"مكتب","cat":"office","poly":[[668.2,2191.8],[765.7,2191.8],[765.7,2336.1],[668.2,2336.1]]},{"id":"F1-088","num":"12-1.141","en":"Office","ar":"مكتب","cat":"office","poly":[[769.6,2191.8],[867.1,2191.8],[867.1,2336.1],[769.6,2336.1]]},{"id":"F1-089","num":"12-1.113","en":"Office","ar":"مكتب","cat":"office","poly":[[872.3,2191.8],[968.5,2191.8],[968.5,2336.1],[872.3,2336.1]]},{"id":"F1-090","num":"12-1.112","en":"Office","ar":"مكتب","cat":"office","poly":[[973.7,2191.8],[1068.6,2191.8],[1068.6,2336.1],[973.7,2336.1]]},{"id":"F1-091","num":"12-1.083","en":"Office","ar":"مكتب","cat":"office","poly":[[1440.4,2191.8],[1532.7,2191.8],[1532.7,2336.1],[1440.4,2336.1]]},{"id":"F1-092","num":"12-1.080","en":"Office","ar":"مكتب","cat":"office","poly":[[1537.9,2191.8],[1628.9,2191.8],[1628.9,2376.4],[1537.9,2376.4]]},{"id":"F1-093","num":"12-1.079","en":"Office","ar":"مكتب","cat":"office","poly":[[1632.8,2191.8],[1695.2,2191.8],[1695.2,2336.1],[1632.8,2336.1]]},{"id":"F1-094","num":"12-1.049","en":"Office","ar":"مكتب","cat":"office","poly":[[2096.9,2191.8],[2191.8,2191.8],[2191.8,2336.1],[2096.9,2336.1]]},{"id":"F1-095","num":"12-1.048","en":"Office","ar":"مكتب","cat":"office","poly":[[2197.0,2191.8],[2294.5,2191.8],[2294.5,2336.1],[2197.0,2336.1]]},{"id":"F1-096","num":"12-1.044","en":"Office","ar":"مكتب","cat":"office","poly":[[2298.4,2191.8],[2395.9,2191.8],[2395.9,2336.1],[2298.4,2336.1]]},{"id":"F1-097","num":"12-1.043","en":"Office","ar":"مكتب","cat":"office","poly":[[2401.1,2191.8],[2505.1,2191.8],[2505.1,2336.1],[2401.1,2336.1]]},{"id":"F1-098","num":"","en":"Elev. Machine","ar":"غرفة المصعد","cat":"svc","poly":[[2668.9,2199.6],[2719.6,2199.6],[2719.6,2247.7],[2668.9,2247.7]]},{"id":"F1-099","num":"12-1.041","en":"Mechanical","ar":"غرفة الميكانيكا","cat":"svc","poly":[[2570.1,2199.6],[3000.4,2199.6],[3000.4,2437.5],[2570.1,2437.5]]},{"id":"F1-100","num":"","en":"","ar":"","cat":"svc","poly":[[1696.5,2210.0],[1725.1,2210.0],[1725.1,2310.1],[1696.5,2310.1]]},{"id":"F1-101","num":"","en":"","ar":"","cat":"elev","poly":[[2593.5,2226.9],[2657.2,2226.9],[2657.2,2267.2],[2593.5,2267.2]]},{"id":"F1-102","num":"12-1.136","en":"","ar":"","cat":"svc","poly":[[126.1,2269.8],[187.2,2269.8],[187.2,2311.4],[126.1,2311.4]]},{"id":"F1-103","num":"","en":"Elev. Machine","ar":"غرفة المصعد","cat":"svc","poly":[[48.1,2280.2],[106.6,2280.2],[106.6,2397.2],[48.1,2397.2]]},{"id":"F1-104","num":"","en":"","ar":"","cat":"elev","poly":[[113.1,2325.7],[202.8,2325.7],[202.8,2384.2],[113.1,2384.2]]},{"id":"F1-105","num":"12-1.138","en":"Office","ar":"مكتب","cat":"office","poly":[[263.9,2337.4],[479.7,2337.4],[479.7,2437.5],[263.9,2437.5]]},{"id":"F1-106","num":"12-1.139","en":"Office","ar":"مكتب","cat":"office","poly":[[484.9,2337.4],[596.7,2337.4],[596.7,2437.5],[484.9,2437.5]]},{"id":"F1-107","num":"12-1.114","en":"Office","ar":"مكتب","cat":"office","poly":[[813.8,2340.0],[904.8,2340.0],[904.8,2463.5],[813.8,2463.5]]},{"id":"F1-108","num":"12-1.047","en":"Office","ar":"مكتب","cat":"office","poly":[[2262.0,2340.0],[2353.0,2340.0],[2353.0,2463.5],[2262.0,2463.5]]},{"id":"F1-109","num":"12-1.085","en":"Office","ar":"مكتب","cat":"office","poly":[[1132.3,2366.0],[1251.9,2366.0],[1251.9,2463.5],[1132.3,2463.5]]},{"id":"F1-110","num":"12-1.084","en":"Office","ar":"مكتب","cat":"office","poly":[[1257.1,2366.0],[1375.4,2366.0],[1375.4,2463.5],[1257.1,2463.5]]},{"id":"F1-111","num":"12-1.078","en":"Office","ar":"مكتب","cat":"office","poly":[[1790.1,2366.0],[1908.4,2366.0],[1908.4,2463.5],[1790.1,2463.5]]},{"id":"F1-112","num":"12-1.077","en":"Office","ar":"مكتب","cat":"office","poly":[[1913.6,2366.0],[2033.2,2366.0],[2033.2,2463.5],[1913.6,2463.5]]},{"id":"F1-113","num":"12-1.140","en":"Office","ar":"مكتب","cat":"office","poly":[[668.2,2381.6],[808.6,2381.6],[808.6,2463.5],[668.2,2463.5]]},{"id":"F1-114","num":"12-1.115","en":"Office","ar":"مكتب","cat":"office","poly":[[908.7,2381.6],[1038.7,2381.6],[1038.7,2463.5],[908.7,2463.5]]},{"id":"F1-115","num":"12-1.082","en":"Office","ar":"مكتب","cat":"office","poly":[[1470.3,2381.6],[1580.8,2381.6],[1580.8,2463.5],[1470.3,2463.5]]},{"id":"F1-116","num":"12-1.081","en":"Office","ar":"مكتب","cat":"office","poly":[[1584.7,2381.6],[1695.2,2381.6],[1695.2,2463.5],[1584.7,2463.5]]},{"id":"F1-117","num":"12-1.046","en":"Office","ar":"مكتب","cat":"office","poly":[[2128.1,2381.6],[2256.8,2381.6],[2256.8,2463.5],[2128.1,2463.5]]},{"id":"F1-118","num":"12-1.045","en":"Office","ar":"مكتب","cat":"office","poly":[[2356.9,2381.6],[2505.1,2381.6],[2505.1,2463.5],[2356.9,2463.5]]},{"id":"F1-119","num":"1S11","en":"","ar":"","cat":"stair","poly":[[58.5,2403.7],[254.8,2403.7],[254.8,2484.3],[58.5,2484.3]]},{"id":"F1-120","num":"","en":"","ar":"","cat":"svc","poly":[[607.1,2528.5],[646.1,2528.5],[646.1,2546.7],[607.1,2546.7]]},{"id":"F1-121","num":"12-1.116","en":"Office","ar":"مكتب","cat":"office","poly":[[650.0,2528.5],[741.0,2528.5],[741.0,2655.9],[650.0,2655.9]]},{"id":"F1-122","num":"12-1.117","en":"Office","ar":"مكتب","cat":"office","poly":[[746.2,2528.5],[833.3,2528.5],[833.3,2655.9],[746.2,2655.9]]},{"id":"F1-123","num":"12-1.118","en":"Office","ar":"مكتب","cat":"office","poly":[[837.2,2528.5],[924.3,2528.5],[924.3,2655.9],[837.2,2655.9]]},{"id":"F1-124","num":"12-1.119","en":"Office","ar":"مكتب","cat":"office","poly":[[929.5,2528.5],[1015.3,2528.5],[1015.3,2655.9],[929.5,2655.9]]},{"id":"F1-125","num":"12-1.120","en":"Office","ar":"مكتب","cat":"office","poly":[[1020.5,2528.5],[1106.3,2528.5],[1106.3,2655.9],[1020.5,2655.9]]},{"id":"F1-126","num":"12-1.086","en":"Office","ar":"مكتب","cat":"office","poly":[[1111.5,2528.5],[1201.2,2528.5],[1201.2,2655.9],[1111.5,2655.9]]},{"id":"F1-127","num":"12-1.087","en":"Office","ar":"مكتب","cat":"office","poly":[[1307.8,2528.5],[1397.5,2528.5],[1397.5,2655.9],[1307.8,2655.9]]},{"id":"F1-128","num":"12-1.088","en":"Office","ar":"مكتب","cat":"office","poly":[[1401.4,2528.5],[1488.5,2528.5],[1488.5,2655.9],[1401.4,2655.9]]},{"id":"F1-129","num":"12-1.089","en":"Office","ar":"مكتب","cat":"office","poly":[[1493.7,2528.5],[1579.5,2528.5],[1579.5,2655.9],[1493.7,2655.9]]},{"id":"F1-130","num":"12-1.090","en":"Office","ar":"مكتب","cat":"office","poly":[[1584.7,2528.5],[1670.5,2528.5],[1670.5,2655.9],[1584.7,2655.9]]},{"id":"F1-131","num":"12-1.091","en":"Office","ar":"مكتب","cat":"office","poly":[[1696.5,2528.5],[1762.8,2528.5],[1762.8,2655.9],[1696.5,2655.9]]},{"id":"F1-132","num":"12-1.092","en":"Office","ar":"مكتب","cat":"office","poly":[[1766.7,2528.5],[1857.7,2528.5],[1857.7,2655.9],[1766.7,2655.9]]},{"id":"F1-133","num":"12-1.050","en":"Office","ar":"مكتب","cat":"office","poly":[[1964.3,2528.5],[2055.3,2528.5],[2055.3,2655.9],[1964.3,2655.9]]},{"id":"F1-134","num":"12-1.051","en":"Office","ar":"مكتب","cat":"office","poly":[[2060.5,2528.5],[2147.6,2528.5],[2147.6,2655.9],[2060.5,2655.9]]},{"id":"F1-135","num":"12-1.052","en":"Office","ar":"مكتب","cat":"office","poly":[[2151.5,2528.5],[2238.6,2528.5],[2238.6,2655.9],[2151.5,2655.9]]},{"id":"F1-136","num":"12-1.053","en":"Office","ar":"مكتب","cat":"office","poly":[[2243.8,2528.5],[2329.6,2528.5],[2329.6,2655.9],[2243.8,2655.9]]},{"id":"F1-137","num":"12-1.054","en":"Office","ar":"مكتب","cat":"office","poly":[[2334.8,2528.5],[2420.6,2528.5],[2420.6,2655.9],[2334.8,2655.9]]},{"id":"F1-138","num":"12-1.055","en":"Office","ar":"مكتب","cat":"office","poly":[[2425.8,2528.5],[2515.5,2528.5],[2515.5,2655.9],[2425.8,2655.9]]},{"id":"F1-139","num":"","en":"","ar":"","cat":"svc","poly":[[2519.4,2528.5],[2559.7,2528.5],[2559.7,2546.7],[2519.4,2546.7]]},{"id":"F1-140","num":"","en":"","ar":"","cat":"svc","poly":[[1111.5,2554.5],[1129.7,2554.5],[1129.7,2590.9],[1111.5,2590.9]]},{"id":"F1-141","num":"","en":"","ar":"","cat":"svc","poly":[[1675.7,2554.5],[1695.2,2554.5],[1695.2,2636.4],[1675.7,2636.4]]},{"id":"F1-142","num":"12-1.005","en":"Auditorium (open to below)","ar":"فراغ المسرح","cat":"void","poly":[[3016.0,256.1],[3650.4,256.1],[3650.4,696.8],[3016.0,696.8]]},{"id":"F1-143","num":"","en":"","ar":"","cat":"svc","poly":[[3031.6,139.1],[3104.4,139.1],[3104.4,257.4],[3031.6,257.4]]},{"id":"F1-144","num":"","en":"","ar":"","cat":"svc","poly":[[3116.1,158.6],[3182.4,158.6],[3182.4,315.9],[3116.1,315.9]]},{"id":"F1-145","num":"","en":"","ar":"","cat":"svc","poly":[[3246.1,61.1],[3442.4,61.1],[3442.4,218.4],[3246.1,218.4]]},{"id":"F1-146","num":"","en":"","ar":"","cat":"svc","poly":[[3480.1,139.1],[3591.9,139.1],[3591.9,315.9],[3480.1,315.9]]},{"id":"F1-147","num":"12-1.006","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[3025.1,789.1],[3130.4,789.1],[3130.4,959.4],[3025.1,959.4]]},{"id":"F1-148","num":"","en":"Janitor","ar":"النظافة","cat":"svc","poly":[[3025.1,964.6],[3078.4,964.6],[3078.4,1004.9],[3025.1,1004.9]]},{"id":"F1-149","num":"1S01","en":"","ar":"","cat":"stair","poly":[[3025.1,1010.1],[3169.4,1010.1],[3169.4,1089.4],[3025.1,1089.4]]},{"id":"F1-150","num":"12-1.008","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3025.1,1094.6],[3175.9,1094.6],[3175.9,1336.4],[3025.1,1336.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2787","cap":40},{"id":"F1-151","num":"","en":"","ar":"","cat":"svc","poly":[[3031.6,1341.6],[3104.4,1341.6],[3104.4,1407.9],[3031.6,1407.9]]},{"id":"F1-152","num":"12-1.009","en":"Storage","ar":"مستودع","cat":"svc","poly":[[3116.1,1341.6],[3175.9,1341.6],[3175.9,1407.9],[3116.1,1407.9]]},{"id":"F1-153","num":"12-1.004","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,1010.1],[3663.4,1010.1],[3663.4,1232.4],[3480.1,1232.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2786","cap":40},{"id":"F1-154","num":"12-1.003","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,1237.6],[3663.4,1237.6],[3663.4,1446.9],[3480.1,1446.9]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2785","cap":40},{"id":"F1-155","num":"12-1.002","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[3480.1,1454.7],[3559.4,1454.7],[3559.4,1511.9],[3480.1,1511.9]]},{"id":"F1-156","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[3272.1,1016.6],[3364.4,1016.6],[3364.4,1446.9],[3272.1,1446.9]]},{"id":"F1-157","num":"1S02","en":"","ar":"","cat":"stair","poly":[[3122.6,1653.6],[3221.4,1653.6],[3221.4,2038.4],[3122.6,2038.4]]},{"id":"F1-158","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[3233.1,1562.6],[3494.4,1562.6],[3494.4,2155.4],[3233.1,2155.4]]},{"id":"F1-159","num":"12-1.022","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[3480.1,2186.6],[3559.4,2186.6],[3559.4,2278.9],[3480.1,2278.9]]},{"id":"F1-160","num":"","en":"","ar":"","cat":"svc","poly":[[3031.6,2284.1],[3104.4,2284.1],[3104.4,2350.4],[3031.6,2350.4]]},{"id":"F1-161","num":"12-1.010","en":"Storage","ar":"مستودع","cat":"svc","poly":[[3116.1,2284.1],[3175.9,2284.1],[3175.9,2350.4],[3116.1,2350.4]]},{"id":"F1-162","num":"12-1.011","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3025.1,2355.6],[3175.9,2355.6],[3175.9,2675.4],[3025.1,2675.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2788","cap":47},{"id":"F1-163","num":"1S03","en":"","ar":"","cat":"stair","poly":[[3025.1,2680.6],[3169.4,2680.6],[3169.4,2753.4],[3025.1,2753.4]]},{"id":"F1-164","num":"","en":"Janitor","ar":"النظافة","cat":"svc","poly":[[3025.1,2758.6],[3091.4,2758.6],[3091.4,2792.4],[3025.1,2792.4]]},{"id":"F1-165","num":"12-1.013","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[3025.1,2797.6],[3130.4,2797.6],[3130.4,2941.9],[3025.1,2941.9]]},{"id":"F1-166","num":"12-1.021","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,2284.1],[3663.4,2284.1],[3663.4,2499.9],[3480.1,2499.9]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2794","cap":40},{"id":"F1-167","num":"12-1.020","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,2505.1],[3663.4,2505.1],[3663.4,2727.4],[3480.1,2727.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2793","cap":40},{"id":"F1-168","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[3272.1,2355.6],[3364.4,2355.6],[3364.4,2727.4],[3272.1,2727.4]]},{"id":"F1-169","num":"12-1.014","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3025.1,2947.1],[3175.9,2947.1],[3175.9,3156.4],[3025.1,3156.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2811","cap":36},{"id":"F1-170","num":"12-1.015","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3025.1,3161.6],[3175.9,3161.6],[3175.9,3377.4],[3025.1,3377.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2789","cap":38},{"id":"F1-171","num":"12-1.019","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,2940.6],[3663.4,2940.6],[3663.4,3156.4],[3480.1,3156.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2792","cap":36},{"id":"F1-172","num":"12-1.018","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3480.1,3161.6],[3663.4,3161.6],[3663.4,3377.4],[3480.1,3377.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2791","cap":38},{"id":"F1-173","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[3278.6,2947.1],[3383.9,2947.1],[3383.9,3338.4],[3278.6,3338.4]]},{"id":"F1-174","num":"12-1.016","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3025.1,3382.6],[3357.9,3382.6],[3357.9,3637.4],[3025.1,3637.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/3870"},{"id":"F1-175","num":"12-1.017","en":"Classroom","ar":"قاعة دراسية","cat":"class","poly":[[3363.1,3382.6],[3663.4,3382.6],[3663.4,3637.4],[3363.1,3637.4]],"sched":"https://uqu.edu.sa/App/BuildingsRoom/2790"},{"id":"F1-176","num":"1S04","en":"","ar":"","cat":"stair","poly":[[2706.6,1653.6],[2770.3,1653.6],[2770.3,1787.5],[2706.6,1787.5]]},{"id":"F1-177","num":"12-1.107","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1110.2,1779.7],[1255.8,1779.7],[1255.8,1998.1],[1110.2,1998.1]]},{"id":"F1-178","num":"12-1.071","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1768.0,1779.7],[1913.6,1779.7],[1913.6,1998.1],[1768.0,1998.1]]},{"id":"F1-179","num":"1126","en":"","ar":"","cat":"vest","poly":[[1110.2,1700.4],[1176.5,1700.4],[1176.5,1773.2],[1110.2,1773.2]]},{"id":"F1-180","num":"1124","en":"","ar":"","cat":"vest","poly":[[1110.2,2004.6],[1176.5,2004.6],[1176.5,2076.1],[1110.2,2076.1]]},{"id":"F1-181","num":"1182","en":"","ar":"","cat":"vest","poly":[[1768.0,1700.4],[1834.3,1700.4],[1834.3,1773.2],[1768.0,1773.2]]},{"id":"F1-182","num":"1086","en":"","ar":"","cat":"vest","poly":[[1768.0,2004.6],[1834.3,2004.6],[1834.3,2076.1],[1768.0,2076.1]]},{"id":"F1-183","num":"1S08","en":"","ar":"","cat":"stair","poly":[[1136.2,1415.7],[1378.0,1415.7],[1378.0,1583.4],[1136.2,1583.4]]},{"id":"F1-184","num":"1S06","en":"","ar":"","cat":"stair","poly":[[1790.1,1415.7],[2034.5,1415.7],[2034.5,1583.4],[1790.1,1583.4]]},{"id":"F1-185","num":"1S09","en":"","ar":"","cat":"stair","poly":[[1136.2,2193.1],[1378.0,2193.1],[1378.0,2360.8],[1136.2,2360.8]]},{"id":"F1-186","num":"1S07","en":"","ar":"","cat":"stair","poly":[[1790.1,2193.1],[2034.5,2193.1],[2034.5,2360.8],[1790.1,2360.8]]}],"circ":[[[1695.2,1254.5],[1303.9,1253.2],[1302.6,1229.8],[1205.1,1229.8],[1203.8,1253.2],[904.8,1253.2],[903.5,1270.1],[887.9,1275.3],[887.9,1307.8],[1042.6,1309.1],[1041.3,1400.1],[913.9,1400.1],[912.6,1436.5],[1072.5,1435.2],[1073.8,1587.3],[890.5,1588.6],[890.5,1610.7],[882.7,1612.0],[882.7,1627.6],[854.1,1628.9],[852.8,1612.0],[847.6,1612.0],[845.0,1604.2],[830.7,1601.6],[830.7,1588.6],[663.0,1587.3],[663.0,1437.8],[808.6,1435.2],[808.6,1400.1],[664.3,1400.1],[663.0,1309.1],[856.7,1307.8],[854.1,1253.2],[595.4,1253.2],[595.4,1333.8],[608.4,1335.1],[608.4,1402.7],[652.6,1404.0],[651.3,1426.1],[608.4,1426.1],[608.4,1443.0],[598.0,1444.3],[598.0,1495.0],[608.4,1496.3],[608.4,1784.9],[598.0,1786.2],[598.0,1990.3],[608.4,1991.6],[608.4,2278.9],[598.0,2280.2],[598.0,2332.2],[608.4,2333.5],[608.4,2373.8],[808.6,2376.4],[808.6,2340.0],[663.0,2338.7],[664.3,2187.9],[1073.8,2189.2],[1072.5,2341.3],[912.6,2340.0],[912.6,2376.4],[1041.3,2376.4],[1041.3,2468.7],[897.0,2468.7],[897.0,2484.3],[889.2,2485.6],[887.9,2502.5],[860.6,2502.5],[859.3,2485.6],[830.7,2484.3],[829.4,2468.7],[664.3,2468.7],[663.0,2397.2],[608.4,2398.5],[608.4,2440.1],[595.4,2441.4],[595.4,2523.3],[1203.8,2523.3],[1205.1,2546.7],[1302.6,2546.7],[1303.9,2523.3],[1695.2,2520.7],[1695.2,2468.7],[1601.6,2468.7],[1601.6,2479.1],[1593.8,2484.3],[1592.5,2502.5],[1563.9,2502.5],[1556.1,2468.7],[1466.4,2468.7],[1465.1,2377.7],[1484.6,2373.8],[1532.7,2376.4],[1532.7,2340.0],[1435.2,2338.7],[1436.5,2187.9],[1695.2,2187.9],[1695.2,2121.6],[1679.6,2121.6],[1678.3,2111.2],[1487.2,2111.2],[1485.9,2120.3],[1459.9,2120.3],[1458.6,2111.2],[1379.3,2111.2],[1376.7,2120.3],[1350.7,2120.3],[1349.4,2080.0],[1327.3,2078.7],[1327.3,2026.7],[1348.1,2024.1],[1348.1,1985.1],[1359.8,1983.8],[1359.8,1961.7],[1327.3,1960.4],[1327.3,1908.4],[1359.8,1907.1],[1359.8,1869.4],[1283.1,1872.0],[1284.4,1848.6],[1327.3,1848.6],[1328.6,1814.8],[1359.8,1814.8],[1359.8,1792.7],[1348.1,1791.4],[1348.1,1751.1],[1327.3,1749.8],[1327.3,1697.8],[1349.4,1696.5],[1350.7,1654.9],[1376.7,1654.9],[1379.3,1665.3],[1458.6,1665.3],[1459.9,1654.9],[1485.9,1654.9],[1488.5,1665.3],[1677.0,1665.3],[1679.6,1654.9],[1695.2,1654.9],[1695.2,1588.6],[1665.3,1588.6],[1660.1,1627.6],[1630.2,1628.9],[1625.0,1588.6],[1435.2,1587.3],[1435.2,1437.8],[1532.7,1436.5],[1532.7,1400.1],[1465.1,1398.8],[1465.1,1309.1],[1563.9,1307.8],[1565.2,1274.0],[1595.1,1275.3],[1595.1,1307.8],[1695.2,1307.8]],[[1696.5,1253.2],[1696.5,1307.8],[1700.4,1309.1],[1700.4,1332.5],[1706.9,1333.8],[1706.9,1346.8],[1700.4,1348.1],[1696.5,1432.6],[1730.3,1436.5],[1730.3,1587.3],[1696.5,1588.6],[1696.5,1654.9],[1762.8,1654.9],[1764.1,1692.6],[1796.6,1692.6],[1808.3,1670.5],[1836.9,1664.0],[1838.2,1647.1],[2037.1,1647.1],[2038.4,1697.8],[2031.9,1701.7],[2031.9,1726.4],[2038.4,1730.3],[2038.4,1851.2],[2094.3,1851.2],[2094.3,1816.1],[2125.5,1814.8],[2125.5,1792.7],[2115.1,1791.4],[2115.1,1751.1],[2094.3,1749.8],[2094.3,1697.8],[2116.4,1696.5],[2117.7,1654.9],[2143.7,1654.9],[2146.3,1665.3],[2334.8,1664.0],[2336.1,1654.9],[2362.1,1654.9],[2364.7,1665.3],[2389.4,1665.3],[2392.0,1654.9],[2472.6,1654.9],[2473.9,1647.1],[2567.5,1647.1],[2567.5,1580.8],[2557.1,1579.5],[2557.1,1566.5],[2564.9,1565.2],[2564.9,1454.7],[2550.6,1452.1],[2550.6,1431.3],[2519.4,1430.0],[2519.4,1407.9],[2564.9,1406.6],[2564.9,1349.4],[2557.1,1348.1],[2557.1,1335.1],[2570.1,1333.8],[2570.1,1253.2],[1961.7,1253.2],[1960.4,1229.8],[1862.9,1229.8],[1861.6,1253.2]],[[215.8,1379.3],[215.8,1410.5],[258.7,1410.5],[258.7,1383.2]],[[1635.4,1400.1],[1636.7,1436.5],[1695.2,1435.2],[1695.2,1400.1]],[[215.8,1435.2],[215.8,1506.7],[260.0,1506.7],[261.3,1495.0],[275.6,1495.0],[276.9,1506.7],[369.2,1506.7],[370.5,1495.0],[384.8,1495.0],[386.1,1506.7],[479.7,1506.7],[481.0,1495.0],[494.0,1495.0],[495.3,1506.7],[585.0,1506.7],[585.0,1496.3],[596.7,1495.0],[596.7,1444.3],[260.0,1444.3],[258.7,1435.2]],[[2997.8,1573.0],[2902.9,1573.0],[2901.6,1549.6],[2883.4,1549.6],[2879.5,1553.5],[2850.9,1550.9],[2848.3,1573.0],[2798.9,1573.0],[2797.6,1580.8],[2570.1,1582.1],[2570.1,1647.1],[2796.3,1647.1],[2797.6,1654.9],[2941.9,1654.9],[2943.2,1714.7],[2997.8,1714.7]],[[2363.4,1670.5],[2362.1,1682.2],[2336.1,1682.2],[2336.1,1765.4],[2363.4,1766.7],[2362.1,1792.7],[2336.1,1792.7],[2336.1,1983.8],[2363.4,1985.1],[2362.1,2011.1],[2336.1,2011.1],[2336.1,2093.0],[2362.1,2093.0],[2364.7,2106.0],[2389.4,2106.0],[2393.3,2074.8],[2393.3,1701.7],[2390.7,1670.5]],[[596.7,1786.2],[569.4,1786.2],[566.8,1762.8],[548.6,1762.8],[547.3,1784.9],[536.9,1788.8],[535.6,1764.1],[516.1,1762.8],[514.8,1786.2],[484.9,1786.2],[483.6,1818.7],[305.5,1818.7],[302.9,1825.2],[280.8,1825.2],[283.4,1846.0],[308.1,1848.6],[306.8,1857.7],[280.8,1857.7],[280.8,1875.9],[299.0,1875.9],[305.5,1881.1],[302.9,1917.5],[306.8,1920.1],[305.5,1929.2],[280.8,1933.1],[280.8,1951.3],[302.9,1951.3],[305.5,1957.8],[483.6,1957.8],[484.9,1989.0],[514.8,1990.3],[516.1,2013.7],[535.6,2012.4],[536.9,1990.3],[546.0,1991.6],[548.6,2012.4],[566.8,2012.4],[569.4,1990.3],[596.7,1990.3]],[[2415.4,1792.7],[2415.4,1983.8],[2567.5,1983.8],[2567.5,1953.9],[2442.7,1952.6],[2442.7,1823.9],[2464.8,1822.6],[2463.5,1792.7]],[[2464.8,1804.4],[2464.8,1822.6],[2567.5,1822.6],[2567.5,1792.7],[2470.0,1792.7],[2470.0,1801.8]],[[1696.5,2120.3],[1696.5,2187.9],[1730.3,2189.2],[1730.3,2340.0],[1696.5,2342.6],[1696.5,2376.4],[1701.7,2382.9],[1742.0,2384.2],[1740.7,2407.6],[1700.4,2407.6],[1700.4,2427.1],[1706.9,2428.4],[1706.9,2442.7],[1700.4,2444.0],[1700.4,2467.4],[1696.5,2468.7],[1697.8,2523.3],[1861.6,2523.3],[1862.9,2546.7],[1960.4,2546.7],[1961.7,2523.3],[2570.1,2523.3],[2570.1,2446.6],[2551.9,2445.3],[2551.9,2372.5],[2519.4,2371.2],[2520.7,2347.8],[2551.9,2347.8],[2551.9,2195.7],[2567.5,2194.4],[2567.5,2129.4],[2488.2,2129.4],[2486.9,2120.3],[2390.7,2120.3],[2389.4,2111.2],[2364.7,2111.2],[2362.1,2120.3],[2336.1,2120.3],[2334.8,2112.5],[2146.3,2111.2],[2143.7,2120.3],[2117.7,2120.3],[2116.4,2080.0],[2094.3,2078.7],[2094.3,2026.7],[2113.8,2024.1],[2115.1,1985.1],[2125.5,1983.8],[2125.5,1961.7],[2094.3,1960.4],[2094.3,1908.4],[2125.5,1907.1],[2125.5,1869.4],[2038.4,1874.6],[2037.1,2129.4],[1838.2,2129.4],[1835.6,2109.9],[1817.4,2109.9],[1803.1,2099.5],[1765.4,2098.2],[1762.8,2120.3]],[[2753.4,2061.8],[2753.4,2124.2],[2782.0,2124.2],[2783.3,2107.3],[2791.1,2107.3],[2792.4,2116.4],[2827.5,2116.4],[2827.5,2082.6],[2818.4,2081.3],[2818.4,2061.8]],[[2997.8,2061.8],[2943.2,2061.8],[2941.9,2120.3],[2801.5,2121.6],[2800.2,2129.4],[2749.5,2129.4],[2748.2,2122.9],[2731.3,2120.3],[2720.9,2108.6],[2702.7,2108.6],[2701.4,2129.4],[2570.1,2129.4],[2570.1,2194.4],[2584.4,2195.7],[2584.4,2215.2],[2663.7,2215.2],[2665.0,2194.4],[2800.2,2194.4],[2801.5,2203.5],[2848.3,2203.5],[2850.9,2225.6],[2869.1,2225.6],[2870.4,2202.2],[2879.5,2200.9],[2883.4,2226.9],[2901.6,2226.9],[2902.9,2203.5],[2927.6,2203.5],[2928.9,2198.3],[2997.8,2203.5]],[[2997.8,2061.8],[2997.8,2203.5],[3016.0,2203.5],[3016.0,2061.8]],[[2702.7,2065.7],[2702.7,2091.7],[2748.2,2089.1],[2748.2,2065.7]],[[208.0,2368.6],[215.8,2369.9],[215.8,2397.2],[258.7,2394.6],[260.0,2332.2],[445.9,2332.2],[457.6,2328.3],[596.7,2332.2],[596.7,2280.2],[586.3,2280.2],[585.0,2269.8],[495.3,2269.8],[494.0,2280.2],[481.0,2280.2],[479.7,2269.8],[449.8,2269.8],[449.8,2286.7],[442.0,2289.3],[440.7,2306.2],[412.1,2306.2],[410.8,2289.3],[404.3,2285.4],[404.3,2269.8],[386.1,2269.8],[384.8,2280.2],[370.5,2280.2],[369.2,2269.8],[276.9,2269.8],[275.6,2280.2],[261.3,2280.2],[260.0,2269.8],[215.8,2269.8],[215.8,2334.8],[208.0,2336.1]],[[1634.1,2340.0],[1632.8,2376.4],[1695.2,2373.8],[1695.2,2341.3]],[[3013.4,699.4],[3653.0,699.4],[3653.0,786.5],[3013.4,786.5]],[[3133.0,786.5],[3477.5,786.5],[3477.5,1007.5],[3133.0,1007.5]],[[3185.0,1007.5],[3477.5,1007.5],[3477.5,1456.0],[3185.0,1456.0]],[[3003.0,1410.5],[3185.0,1410.5],[3185.0,1651.0],[3003.0,1651.0]],[[3003.0,1638.0],[3120.0,1638.0],[3120.0,2184.0],[3003.0,2184.0]],[[3120.0,1456.0],[3562.0,1456.0],[3562.0,1651.0],[3120.0,1651.0]],[[3120.0,2041.0],[3562.0,2041.0],[3562.0,2184.0],[3120.0,2184.0]],[[3003.0,2184.0],[3477.5,2184.0],[3477.5,2281.5],[3003.0,2281.5]],[[3185.0,2281.5],[3477.5,2281.5],[3477.5,2756.0],[3185.0,2756.0]],[[3133.0,2756.0],[3477.5,2756.0],[3477.5,2944.5],[3133.0,2944.5]],[[3185.0,2944.5],[3477.5,2944.5],[3477.5,3380.0],[3185.0,3380.0]],[[3094.0,2756.0],[3133.0,2756.0],[3133.0,2795.0],[3094.0,2795.0]]],"marks":[]},{"key":"2","en":"Second Floor","ar":"الطابق الثاني","prefix":"","w":3744,"h":2392,"rooms":[{"id":"F2-001","num":"2S08","en":"","ar":"","cat":"stair","poly":[[61.8,665.0],[293.2,665.0],[293.2,752.1],[61.8,752.1]]},{"id":"F2-002","num":"2S09","en":"","ar":"","cat":"stair","poly":[[61.8,1838.9],[293.2,1838.9],[293.2,1926.0],[61.8,1926.0]]},{"id":"F2-003","num":"2116","en":"Storage","ar":"مستودع","cat":"svc","poly":[[61.8,756.0],[234.7,756.0],[234.7,892.5],[61.8,892.5]]},{"id":"F2-004","num":"2114","en":"Office","ar":"مكتب","cat":"office","poly":[[293.2,718.2],[518.1,718.2],[518.1,823.6],[293.2,823.6]]},{"id":"F2-005","num":"2127","en":"Office","ar":"مكتب","cat":"office","poly":[[293.2,1767.4],[518.1,1767.4],[518.1,1872.7],[293.2,1872.7]]},{"id":"F2-006","num":"2113","en":"Office","ar":"مكتب","cat":"office","poly":[[523.2,718.2],[635.1,718.2],[635.1,823.6],[523.2,823.6]]},{"id":"F2-007","num":"2126","en":"Office","ar":"مكتب","cat":"office","poly":[[523.2,1767.4],[635.1,1767.4],[635.1,1872.7],[523.2,1872.7]]},{"id":"F2-008","num":"2121","en":"Office","ar":"مكتب","cat":"office","poly":[[95.5,900.2],[193.1,900.2],[193.1,1000.4],[95.5,1000.4]]},{"id":"F2-009","num":"2123","en":"Office","ar":"مكتب","cat":"office","poly":[[95.5,1590.5],[193.1,1590.5],[193.1,1690.7],[95.5,1690.7]]},{"id":"F2-010","num":"2118","en":"Office","ar":"مكتب","cat":"office","poly":[[199.6,900.2],[299.7,900.2],[299.7,1000.4],[199.6,1000.4]]},{"id":"F2-011","num":"2125","en":"Office","ar":"مكتب","cat":"office","poly":[[199.6,1590.5],[299.7,1590.5],[299.7,1690.7],[199.6,1690.7]]},{"id":"F2-012","num":"2120","en":"Lab","ar":"معمل","cat":"lab","poly":[[64.4,1006.9],[299.7,1006.9],[299.7,1292.9],[64.4,1292.9]]},{"id":"F2-013","num":"2122","en":"Lab","ar":"معمل","cat":"lab","poly":[[64.4,1298.0],[299.7,1298.0],[299.7,1584.0],[64.4,1584.0]]},{"id":"F2-014","num":"2117","en":"Lab","ar":"معمل","cat":"lab","poly":[[306.2,897.6],[571.4,897.6],[571.4,1217.5],[306.2,1217.5]]},{"id":"F2-015","num":"2124","en":"Computing Student Club","ar":"نادي الحاسبات الطلابي","cat":"lab","poly":[[306.2,1373.5],[571.4,1373.5],[571.4,1693.2],[306.2,1693.2]]},{"id":"F2-016","num":"2101","en":"Department Head","ar":"رئيس القسم","cat":"office","poly":[[696.1,485.6],[866.5,485.6],[866.5,654.6],[696.1,654.6]]},{"id":"F2-017","num":"2111","en":"Department Head","ar":"رئيس القسم","cat":"office","poly":[[696.1,1936.4],[866.5,1936.4],[866.5,2105.3],[696.1,2105.3]]},{"id":"F2-018","num":"2095","en":"Meeting Room","ar":"قاعة اجتماعات","cat":"meet","poly":[[648.1,662.4],[866.5,662.4],[866.5,984.8],[648.1,984.8]]},{"id":"F2-019","num":"2112","en":"Meeting Room","ar":"قاعة اجتماعات","cat":"meet","poly":[[648.1,1606.2],[866.5,1606.2],[866.5,1928.5],[648.1,1928.5]]},{"id":"F2-020","num":"2100","en":"","ar":"","cat":"svc","poly":[[873.0,541.5],[927.6,541.5],[927.6,598.6],[873.0,598.6]]},{"id":"F2-021","num":"2110","en":"","ar":"","cat":"svc","poly":[[873.0,1992.2],[927.6,1992.2],[927.6,2049.5],[873.0,2049.5]]},{"id":"F2-022","num":"2099","en":"","ar":"","cat":"office","poly":[[934.1,473.9],[1045.9,473.9],[1045.9,598.6],[934.1,598.6]]},{"id":"F2-023","num":"2109","en":"Secretary","ar":"سكرتير","cat":"office","poly":[[934.1,1992.2],[1045.9,1992.2],[1045.9,2117.1],[934.1,2117.1]]},{"id":"F2-024","num":"2098","en":"","ar":"","cat":"office","poly":[[1052.4,488.2],[1127.8,488.2],[1127.8,598.6],[1052.4,598.6]]},{"id":"F2-025","num":"2108","en":"","ar":"","cat":"office","poly":[[1052.4,1992.2],[1127.8,1992.2],[1127.8,2102.8],[1052.4,2102.8]]},{"id":"F2-026","num":"2097","en":"Secretary","ar":"سكرتير","cat":"office","poly":[[1134.2,488.2],[1281.2,488.2],[1281.2,598.6],[1134.2,598.6]]},{"id":"F2-027","num":"2107","en":"","ar":"","cat":"office","poly":[[1134.2,1992.2],[1281.2,1992.2],[1281.2,2102.8],[1134.2,2102.8]]},{"id":"F2-028","num":"2093","en":"Data Science","ar":"قسم علم البيانات","cat":"entry","poly":[[870.4,607.8],[987.4,607.8],[987.4,984.8],[870.4,984.8]]},{"id":"F2-029","num":"2103","en":"Computer Science & AI","ar":"قسم علوم الحاسب والذكاء الاصطناعي","cat":"entry","poly":[[870.4,1606.2],[987.4,1606.2],[987.4,1983.2],[870.4,1983.2]]},{"id":"F2-030","num":"2094","en":"Student Lounge","ar":"استراحة طلاب","cat":"office","poly":[[992.6,655.9],[1201.9,655.9],[1201.9,984.8],[992.6,984.8]]},{"id":"F2-031","num":"2104","en":"Student Lounge","ar":"استراحة طلاب","cat":"office","poly":[[992.6,1606.2],[1201.9,1606.2],[1201.9,1935.0],[992.6,1935.0]]},{"id":"F2-032","num":"2096","en":"","ar":"","cat":"office","poly":[[1205.8,605.1],[1331.9,605.1],[1331.9,789.8],[1205.8,789.8]]},{"id":"F2-033","num":"2106","en":"","ar":"","cat":"office","poly":[[1205.8,1801.2],[1331.9,1801.2],[1331.9,1985.8],[1205.8,1985.8]]},{"id":"F2-034","num":"2074","en":"","ar":"","cat":"office","poly":[[1335.8,605.1],[1460.5,605.1],[1460.5,789.8],[1335.8,789.8]]},{"id":"F2-035","num":"2088","en":"Department Head","ar":"رئيس القسم","cat":"office","poly":[[1335.8,1801.2],[1460.5,1801.2],[1460.5,1985.8],[1335.8,1985.8]]},{"id":"F2-036","num":"2S06","en":"","ar":"","cat":"stair","poly":[[1220.0,793.6],[1447.5,793.6],[1447.5,960.1],[1220.0,960.1]]},{"id":"F2-037","num":"2S07","en":"","ar":"","cat":"stair","poly":[[1220.0,1630.9],[1447.5,1630.9],[1447.5,1797.2],[1220.0,1797.2]]},{"id":"F2-038","num":"2067","en":"Meeting Room","ar":"قاعة اجتماعات","cat":"meet","poly":[[1467.0,655.9],[1632.2,655.9],[1632.2,984.8],[1467.0,984.8]]},{"id":"F2-039","num":"2081","en":"Meeting Room","ar":"قاعة اجتماعات","cat":"meet","poly":[[1467.0,1606.2],[1632.2,1606.2],[1632.2,1935.0],[1467.0,1935.0]]},{"id":"F2-040","num":"2073","en":"Secretary","ar":"سكرتير","cat":"office","poly":[[1386.5,485.6],[1555.5,485.6],[1555.5,598.6],[1386.5,598.6]]},{"id":"F2-041","num":"2087","en":"Secretary","ar":"سكرتير","cat":"office","poly":[[1386.5,1992.2],[1555.5,1992.2],[1555.5,2105.3],[1386.5,2105.3]]},{"id":"F2-042","num":"2072","en":"","ar":"","cat":"svc","poly":[[1559.4,527.1],[1615.2,527.1],[1615.2,598.6],[1559.4,598.6]]},{"id":"F2-043","num":"2086","en":"","ar":"","cat":"svc","poly":[[1559.4,1992.2],[1615.2,1992.2],[1615.2,2063.8],[1559.4,2063.8]]},{"id":"F2-044","num":"2071","en":"","ar":"","cat":"office","poly":[[1621.8,472.6],[1737.5,472.6],[1737.5,598.6],[1621.8,598.6]]},{"id":"F2-045","num":"2085","en":"","ar":"","cat":"office","poly":[[1621.8,1992.2],[1737.5,1992.2],[1737.5,2118.3],[1621.8,2118.3]]},{"id":"F2-046","num":"2065","en":"Cybersecurity","ar":"قسم الأمن السيبراني","cat":"entry","poly":[[1636.0,607.8],[1721.9,607.8],[1721.9,984.8],[1636.0,984.8]]},{"id":"F2-047","num":"2079","en":"Software Engineering","ar":"قسم هندسة البرمجيات","cat":"entry","poly":[[1636.0,1606.2],[1721.9,1606.2],[1721.9,1983.2],[1636.0,1983.2]]},{"id":"F2-048","num":"2070","en":"","ar":"","cat":"office","poly":[[1741.4,473.9],[1820.7,473.9],[1820.7,598.6],[1741.4,598.6]]},{"id":"F2-049","num":"2084","en":"","ar":"","cat":"office","poly":[[1741.4,1992.2],[1820.7,1992.2],[1820.7,2117.1],[1741.4,2117.1]]},{"id":"F2-050","num":"2069","en":"Department Head","ar":"رئيس القسم","cat":"office","poly":[[1824.5,485.6],[1972.8,485.6],[1972.8,598.6],[1824.5,598.6]]},{"id":"F2-051","num":"2083","en":"","ar":"","cat":"office","poly":[[1824.5,1992.2],[1972.8,1992.2],[1972.8,2105.3],[1824.5,2105.3]]},{"id":"F2-052","num":"2066","en":"Student Lounge","ar":"استراحة طلاب","cat":"office","poly":[[1727.0,655.9],[1890.9,655.9],[1890.9,984.8],[1727.0,984.8]]},{"id":"F2-053","num":"2080","en":"Student Lounge","ar":"استراحة طلاب","cat":"office","poly":[[1727.0,1606.2],[1890.9,1606.2],[1890.9,1935.0],[1727.0,1935.0]]},{"id":"F2-054","num":"2068","en":"","ar":"","cat":"office","poly":[[1897.4,605.1],[2022.2,605.1],[2022.2,789.8],[1897.4,789.8]]},{"id":"F2-055","num":"2082","en":"","ar":"","cat":"office","poly":[[1897.4,1801.2],[2022.2,1801.2],[2022.2,1985.8],[1897.4,1985.8]]},{"id":"F2-056","num":"2045","en":"","ar":"","cat":"office","poly":[[2028.7,605.1],[2153.5,605.1],[2153.5,789.8],[2028.7,789.8]]},{"id":"F2-057","num":"2057","en":"","ar":"","cat":"office","poly":[[2028.7,1801.2],[2153.5,1801.2],[2153.5,1985.8],[2028.7,1985.8]]},{"id":"F2-058","num":"2S04","en":"","ar":"","cat":"stair","poly":[[1913.0,793.6],[2137.8,793.6],[2137.8,960.1],[1913.0,960.1]]},{"id":"F2-059","num":"2S05","en":"","ar":"","cat":"stair","poly":[[1913.0,1630.9],[2137.8,1630.9],[2137.8,1797.2],[1913.0,1797.2]]},{"id":"F2-060","num":"2040","en":"Department Entry","ar":"مدخل القسم","cat":"entry","poly":[[2158.7,605.1],[2248.3,605.1],[2248.3,984.8],[2158.7,984.8]]},{"id":"F2-061","num":"2038","en":"Vice Deanship for Development & Quality","ar":"وكالة الكلية للتطوير والجودة","cat":"office","poly":[[2434.2,485.6],[2661.8,485.6],[2661.8,650.6],[2434.2,650.6]]},{"id":"F2-062","num":"2044","en":"","ar":"","cat":"office","poly":[[2082.0,485.6],[2308.2,485.6],[2308.2,598.6],[2082.0,598.6]]},{"id":"F2-063","num":"2043","en":"","ar":"","cat":"office","poly":[[2314.7,472.6],[2427.8,472.6],[2427.8,650.6],[2314.7,650.6]]},{"id":"F2-064","num":"2042","en":"Prayer Room","ar":"مصلى","cat":"prayer","poly":[[2252.2,655.9],[2427.8,655.9],[2427.8,818.4],[2252.2,818.4]]},{"id":"F2-065","num":"2041","en":"Office","ar":"مكتب","cat":"office","poly":[[2252.2,822.2],[2427.8,822.2],[2427.8,984.8],[2252.2,984.8]]},{"id":"F2-066","num":"2037","en":"","ar":"","cat":"svc","poly":[[2434.2,655.9],[2490.2,655.9],[2490.2,714.4],[2434.2,714.4]]},{"id":"F2-067","num":"2039","en":"","ar":"","cat":"svc","poly":[[2667.0,602.6],[2719.0,602.6],[2719.0,710.5],[2667.0,710.5]]},{"id":"F2-068","num":"2034","en":"Department Entry","ar":"مدخل القسم","cat":"entry","poly":[[2434.2,718.2],[2582.5,718.2],[2582.5,984.8],[2434.2,984.8]]},{"id":"F2-069","num":"2036","en":"","ar":"","cat":"office","poly":[[2587.7,718.2],[2712.5,718.2],[2712.5,818.4],[2587.7,818.4]]},{"id":"F2-070","num":"2035","en":"","ar":"","cat":"office","poly":[[2587.7,824.9],[2712.5,824.9],[2712.5,984.8],[2587.7,984.8]]},{"id":"F2-071","num":"2S03","en":"","ar":"","cat":"stair","poly":[[2729.3,718.2],[2811.2,718.2],[2811.2,962.6],[2729.3,962.6]]},{"id":"F2-072","num":"2031","en":"","ar":"","cat":"office","poly":[[2820.3,718.2],[2942.6,718.2],[2942.6,853.5],[2820.3,853.5]]},{"id":"F2-073","num":"2025","en":"Vice Dean for Academic Affairs","ar":"وكيل الكلية للشؤون الأكاديمية","cat":"office","poly":[[2951.7,718.2],[3183.1,718.2],[3183.1,878.1],[2951.7,878.1]]},{"id":"F2-074","num":"2030","en":"Storage","ar":"مستودع","cat":"svc","poly":[[2875.0,860.0],[2942.6,860.0],[2942.6,935.4],[2875.0,935.4]]},{"id":"F2-075","num":"2028","en":"Tea","ar":"غرفة الشاي","cat":"svc","poly":[[2875.0,941.9],[2936.1,941.9],[2936.1,986.1],[2875.0,986.1]]},{"id":"F2-076","num":"2026","en":"","ar":"","cat":"svc","poly":[[2951.7,884.6],[3001.1,884.6],[3001.1,974.4],[2951.7,974.4]]},{"id":"F2-077","num":"2024","en":"","ar":"","cat":"office","poly":[[3015.3,887.2],[3180.5,887.2],[3180.5,984.8],[3015.3,984.8]]},{"id":"F2-078","num":"2S01","en":"","ar":"","cat":"stair","poly":[[2815.2,1055.0],[3077.8,1055.0],[3077.8,1109.5],[2815.2,1109.5]]},{"id":"F2-079","num":"2002","en":"","ar":"","cat":"office","poly":[[2793.1,1114.8],[2938.7,1114.8],[2938.7,1257.8],[2793.1,1257.8]]},{"id":"F2-080","num":"2003","en":"","ar":"","cat":"office","poly":[[2942.6,1114.8],[3077.8,1114.8],[3077.8,1257.8],[2942.6,1257.8]]},{"id":"F2-081","num":"2032","en":"Hall","ar":"قاعة","cat":"meet","poly":[[2487.6,1066.7],[2712.5,1066.7],[2712.5,1525.5],[2487.6,1525.5]]},{"id":"F2-082","num":"2005","en":"","ar":"","cat":"office","poly":[[2793.1,1333.2],[2936.1,1333.2],[2936.1,1473.5],[2793.1,1473.5]]},{"id":"F2-083","num":"2006","en":"","ar":"","cat":"office","poly":[[2942.6,1333.2],[3077.8,1333.2],[3077.8,1473.5],[2942.6,1473.5]]},{"id":"F2-084","num":"2S02","en":"","ar":"","cat":"stair","poly":[[2815.2,1478.8],[3076.5,1478.8],[3076.5,1534.7],[2815.2,1534.7]]},{"id":"F2-085","num":"","en":"","ar":"","cat":"elev","poly":[[2724.2,1641.2],[2820.3,1641.2],[2820.3,1707.5],[2724.2,1707.5]]},{"id":"F2-086","num":"2007","en":"","ar":"","cat":"office","poly":[[2722.8,1714.0],[2816.5,1714.0],[2816.5,1870.0],[2722.8,1870.0]]},{"id":"F2-087","num":"2008","en":"","ar":"","cat":"office","poly":[[2821.7,1751.8],[2942.6,1751.8],[2942.6,1870.0],[2821.7,1870.0]]},{"id":"F2-088","num":"2013","en":"","ar":"","cat":"office","poly":[[2871.1,1603.5],[2942.6,1603.5],[2942.6,1745.2],[2871.1,1745.2]]},{"id":"F2-089","num":"2013T","en":"","ar":"","cat":"svc","poly":[[2951.7,1610.0],[3001.1,1610.0],[3001.1,1703.7],[2951.7,1703.7]]},{"id":"F2-090","num":"2012","en":"","ar":"","cat":"office","poly":[[3015.3,1603.5],[3183.1,1603.5],[3183.1,1703.7],[3015.3,1703.7]]},{"id":"F2-091","num":"2014","en":"Administration Director","ar":"مدير الادارة","cat":"office","poly":[[2951.7,1710.2],[3183.1,1710.2],[3183.1,1870.0],[2951.7,1870.0]]},{"id":"F2-092","num":"2058","en":"Student Lounge","ar":"استراحة طلاب","cat":"office","poly":[[2158.7,1603.5],[2365.3,1603.5],[2365.3,1932.5],[2158.7,1932.5]]},{"id":"F2-093","num":"2050","en":"Computer & Network Engineering","ar":"قسم هندسة الحاسب والشبكات","cat":"entry","poly":[[2369.2,1603.5],[2487.6,1603.5],[2487.6,1987.0],[2369.2,1987.0]]},{"id":"F2-094","num":"2051","en":"Meeting Room","ar":"قاعة اجتماعات","cat":"meet","poly":[[2494.1,1603.5],[2709.8,1603.5],[2709.8,1932.5],[2494.1,1932.5]]},{"id":"F2-095","num":"2056","en":"","ar":"","cat":"office","poly":[[2082.0,1992.2],[2223.7,1992.2],[2223.7,2105.3],[2082.0,2105.3]]},{"id":"F2-096","num":"2055","en":"","ar":"","cat":"office","poly":[[2227.6,1939.0],[2310.8,1939.0],[2310.8,2105.3],[2227.6,2105.3]]},{"id":"F2-097","num":"2054","en":"Department Secretary","ar":"سكرتير القسم","cat":"office","poly":[[2314.7,1993.5],[2427.8,1993.5],[2427.8,2114.5],[2314.7,2114.5]]},{"id":"F2-098","num":"2053","en":"","ar":"","cat":"svc","poly":[[2431.7,1993.5],[2490.2,1993.5],[2490.2,2056.0],[2431.7,2056.0]]},{"id":"F2-099","num":"2052","en":"Department Head","ar":"رئيس القسم","cat":"office","poly":[[2494.1,1936.4],[2660.5,1936.4],[2660.5,2105.3],[2494.1,2105.3]]},{"id":"F2-100","num":"2022","en":"Dean","ar":"العميد","cat":"office","poly":[[3144.1,947.1],[3348.2,947.1],[3348.2,1181.0],[3144.1,1181.0]]},{"id":"F2-101","num":"2021","en":"","ar":"","cat":"svc","poly":[[3144.1,1185.0],[3231.2,1185.0],[3231.2,1259.0],[3144.1,1259.0]]},{"id":"F2-102","num":"2020","en":"Tea","ar":"غرفة الشاي","cat":"svc","poly":[[3144.1,1331.9],[3235.1,1331.9],[3235.1,1402.0],[3144.1,1402.0]]},{"id":"F2-103","num":"2019","en":"Dean's Secretary","ar":"سكرتير العميد","cat":"office","poly":[[3239.0,1331.9],[3348.2,1331.9],[3348.2,1402.0],[3239.0,1402.0]]},{"id":"F2-104","num":"2017","en":"","ar":"","cat":"office","poly":[[3144.1,1406.0],[3235.1,1406.0],[3235.1,1519.0],[3144.1,1519.0]]},{"id":"F2-105","num":"2018","en":"","ar":"","cat":"meet","poly":[[3239.0,1406.0],[3348.2,1406.0],[3348.2,1519.0],[3239.0,1519.0]]},{"id":"F2-106","num":"2015","en":"Secretary","ar":"سكرتير","cat":"office","poly":[[3144.1,1523.0],[3348.2,1523.0],[3348.2,1645.2],[3144.1,1645.2]]},{"id":"F2-107","num":"","en":"Open Courtyard","ar":"فناء مكشوف","cat":"court","poly":[[772.9,1081.0],[1146.0,1081.0],[1146.0,1512.5],[772.9,1512.5]]},{"id":"F2-108","num":"","en":"Open Courtyard","ar":"فناء مكشوف","cat":"court","poly":[[1464.5,1081.0],[1837.5,1081.0],[1837.5,1512.5],[1464.5,1512.5]]},{"id":"F2-109","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[2271.8,1081.0],[2473.2,1081.0],[2473.2,1512.5],[2271.8,1512.5]]},{"id":"F2-110","num":"","en":"Open to below","ar":"فراغ مفتوح","cat":"void","poly":[[3356.0,951.0],[3690.1,951.0],[3690.1,1645.2],[3356.0,1645.2]]},{"id":"F2-111","num":"2089","en":"","ar":"","cat":"vest","poly":[[1182.4,1097.9],[1253.9,1097.9],[1253.9,1173.2],[1182.4,1173.2]]},{"id":"F2-112","num":"2075","en":"Storage","ar":"مستودع","cat":"svc","poly":[[1264.2,1058.9],[1337.0,1058.9],[1337.0,1173.2],[1264.2,1173.2]]},{"id":"F2-113","num":"2090","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1164.2,1183.7],[1337.0,1183.7],[1337.0,1408.5],[1164.2,1408.5]]},{"id":"F2-114","num":"2091","en":"","ar":"","cat":"vest","poly":[[1164.2,1419.0],[1253.9,1419.0],[1253.9,1494.4],[1164.2,1494.4]]},{"id":"F2-115","num":"2077","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[1264.2,1419.0],[1337.0,1419.0],[1337.0,1533.4],[1264.2,1533.4]]},{"id":"F2-116","num":"2060","en":"","ar":"","cat":"vest","poly":[[1874.0,1097.9],[1945.5,1097.9],[1945.5,1173.2],[1874.0,1173.2]]},{"id":"F2-117","num":"2059","en":"Janitor","ar":"النظافة","cat":"svc","poly":[[1955.9,1049.8],[2050.8,1049.8],[2050.8,1173.2],[1955.9,1173.2]]},{"id":"F2-118","num":"2046","en":"Storage","ar":"مستودع","cat":"svc","poly":[[2061.2,1049.8],[2152.2,1049.8],[2152.2,1178.5],[2061.2,1178.5]]},{"id":"F2-119","num":"2061","en":"Restrooms","ar":"دورات المياه","cat":"wc","poly":[[1854.5,1183.7],[2028.7,1183.7],[2028.7,1408.5],[1854.5,1408.5]]},{"id":"F2-120","num":"","en":"","ar":"","cat":"svc","poly":[[2039.1,1188.9],[2149.6,1188.9],[2149.6,1400.8],[2039.1,1400.8]]},{"id":"F2-121","num":"2062","en":"","ar":"","cat":"vest","poly":[[1874.0,1419.0],[1910.4,1419.0],[1910.4,1494.4],[1874.0,1494.4]]},{"id":"F2-122","num":"2063","en":"Electric","ar":"كهرباء","cat":"svc","poly":[[1955.9,1419.0],[2050.8,1419.0],[2050.8,1542.5],[1955.9,1542.5]]},{"id":"F2-123","num":"2048","en":"Telecom","ar":"اتصالات","cat":"svc","poly":[[2061.2,1411.2],[2152.2,1411.2],[2152.2,1542.5],[2061.2,1542.5]]},{"id":"F2-124","num":"2129","en":"Elev. Machine","ar":"غرفة المصعد","cat":"svc","poly":[[61.8,1698.5],[120.2,1698.5],[120.2,1835.0],[61.8,1835.0]]},{"id":"F2-125","num":"","en":"","ar":"","cat":"elev","poly":[[124.2,1744.0],[234.7,1744.0],[234.7,1835.0],[124.2,1835.0]]}],"circ":[[[2715.7,990.6],[2583.1,990.6],[2579.2,936.0],[2559.7,936.0],[2557.1,964.6],[2548.0,963.3],[2544.1,937.3],[2525.9,937.3],[2524.6,960.7],[2494.7,962.0],[2493.4,972.4],[2479.1,972.4],[2477.8,962.0],[2432.3,962.0],[2431.0,990.6],[2249.0,990.6],[2247.7,653.9],[2306.2,652.6],[2308.8,604.5],[2160.6,603.2],[2156.7,990.6],[2138.5,989.3],[2138.5,921.7],[2086.5,920.4],[2086.5,850.2],[1968.2,850.2],[1966.9,822.9],[1938.3,822.9],[1938.3,863.2],[1965.6,864.5],[1965.6,920.4],[1942.2,921.7],[1940.9,930.8],[1912.3,930.8],[1911.0,990.6],[1705.6,990.6],[1688.7,981.5],[1670.5,981.5],[1653.6,990.6],[1449.5,990.6],[1448.2,930.8],[1419.6,930.8],[1418.3,921.7],[1394.9,920.4],[1394.9,850.2],[1277.9,850.2],[1276.6,822.9],[1246.7,822.9],[1246.7,863.2],[1272.7,864.5],[1272.7,920.4],[1220.7,921.7],[1219.4,990.6],[984.1,990.6],[967.2,981.5],[949.0,981.5],[941.2,988.0],[932.1,988.0],[930.8,962.0],[881.4,962.0],[881.4,971.1],[871.0,972.4],[869.7,990.6],[631.8,990.6],[630.5,975.0],[637.0,973.7],[637.0,899.6],[630.5,898.3],[630.5,884.0],[637.0,882.7],[637.0,829.4],[288.6,828.1],[287.3,819.0],[241.8,819.0],[241.8,894.4],[288.6,894.4],[289.9,882.7],[304.2,882.7],[305.5,894.4],[404.3,894.4],[405.6,882.7],[419.9,882.7],[421.2,894.4],[518.7,894.4],[520.0,882.7],[534.3,882.7],[536.9,894.4],[573.3,895.7],[573.3,1066.0],[548.6,1068.6],[548.6,1086.8],[573.3,1089.4],[574.6,1099.8],[547.3,1103.7],[547.3,1121.9],[573.3,1123.2],[573.3,1222.0],[336.7,1223.3],[334.1,1229.8],[310.7,1229.8],[310.7,1248.0],[314.6,1251.9],[339.3,1251.9],[340.6,1261.0],[310.7,1264.9],[310.7,1283.1],[335.4,1285.7],[335.4,1306.5],[309.4,1307.8],[309.4,1326.0],[315.9,1331.2],[310.7,1361.1],[334.1,1362.4],[335.4,1368.9],[572.0,1368.9],[573.3,1467.7],[548.6,1470.3],[548.6,1488.5],[575.9,1492.4],[574.6,1501.5],[547.3,1505.4],[547.3,1523.6],[573.3,1524.9],[572.0,1697.8],[547.3,1697.8],[546.0,1708.2],[520.0,1708.2],[518.7,1697.8],[421.2,1697.8],[419.9,1708.2],[405.6,1708.2],[404.3,1697.8],[305.5,1697.8],[304.2,1708.2],[289.9,1708.2],[288.6,1697.8],[241.8,1697.8],[241.8,1773.2],[287.3,1773.2],[288.6,1762.8],[637.0,1762.8],[637.0,1708.2],[630.5,1706.9],[630.5,1692.6],[637.0,1691.3],[637.0,1617.2],[630.5,1615.9],[631.8,1600.3],[869.7,1601.6],[871.0,1618.5],[881.4,1619.8],[881.4,1630.2],[930.8,1630.2],[932.1,1602.9],[949.0,1609.4],[967.2,1609.4],[980.2,1601.6],[1219.4,1601.6],[1220.7,1670.5],[1272.7,1671.8],[1272.7,1727.7],[1246.7,1729.0],[1246.7,1768.0],[1276.6,1768.0],[1277.9,1742.0],[1394.9,1742.0],[1394.9,1670.5],[1420.9,1669.2],[1422.2,1662.7],[1448.2,1660.1],[1449.5,1601.6],[1658.8,1601.6],[1670.5,1609.4],[1688.7,1609.4],[1701.7,1601.6],[1911.0,1601.6],[1912.3,1660.1],[1940.9,1660.1],[1942.2,1669.2],[1965.6,1670.5],[1965.6,1726.4],[1938.3,1727.7],[1938.3,1768.0],[1966.9,1768.0],[1968.2,1742.0],[2086.5,1742.0],[2086.5,1671.8],[2138.5,1670.5],[2139.8,1601.6],[2380.3,1601.6],[2392.0,1609.4],[2428.4,1602.9],[2429.7,1630.2],[2477.8,1630.2],[2477.8,1619.8],[2489.5,1618.5],[2490.8,1601.6],[2715.7,1601.6],[2718.3,1544.4],[2715.7,1536.6],[2704.0,1532.7],[2476.5,1535.3],[2475.2,1524.9],[2263.3,1524.9],[2262.0,1535.3],[2246.4,1534.0],[2246.4,1521.0],[2258.1,1519.7],[2258.1,1417.0],[2246.4,1415.7],[2246.4,1405.3],[2258.1,1404.0],[2258.1,1186.9],[2246.4,1185.6],[2246.4,1175.2],[2258.1,1173.9],[2258.1,1072.5],[2246.4,1071.2],[2246.4,1056.9],[2262.0,1055.6],[2263.3,1067.3],[2398.5,1066.0],[2399.8,1032.2],[2429.7,1030.9],[2431.0,1066.0],[2475.2,1067.3],[2476.5,1055.6],[2704.0,1058.2],[2715.7,1055.6]],[[2819.7,965.9],[2819.7,1050.4],[3079.7,1050.4],[3081.0,1158.3],[3138.2,1158.3],[3138.2,993.2],[3035.5,993.2],[3035.5,1010.1],[3029.0,1011.4],[3027.7,1028.3],[2997.8,1029.6],[2996.5,1011.4],[2990.0,1010.1],[2984.8,993.2],[2869.1,993.2],[2867.8,985.4],[2849.6,982.8],[2849.6,965.9]],[[2718.3,973.7],[2718.3,1055.6],[2733.9,1056.9],[2736.5,1151.8],[2733.9,1192.1],[2718.3,1193.4],[2718.3,1233.7],[2706.6,1235.0],[2706.6,1253.2],[2717.0,1253.2],[2718.3,1263.6],[2763.8,1264.9],[2762.5,1288.3],[2718.3,1288.3],[2718.3,1311.7],[2706.6,1313.0],[2706.6,1331.2],[2718.3,1332.5],[2718.3,1397.5],[2733.9,1398.8],[2736.5,1439.1],[2733.9,1535.3],[2718.3,1536.6],[2718.3,1618.5],[2733.9,1619.8],[2733.9,1639.3],[2817.1,1639.3],[2817.1,1574.3],[2800.2,1567.8],[2791.1,1556.1],[2792.4,1535.3],[2822.3,1532.7],[2822.3,1509.3],[2814.5,1505.4],[2813.2,1478.1],[2791.1,1476.8],[2791.1,1329.9],[2802.8,1328.6],[2811.9,1305.2],[2811.9,1287.0],[2802.8,1262.3],[2791.1,1261.0],[2791.1,1114.1],[2813.2,1112.8],[2814.5,1082.9],[2822.3,1081.6],[2822.3,1059.5],[2792.4,1055.6],[2788.5,1043.9],[2791.1,1029.6],[2814.5,1015.3],[2814.5,972.4]],[[2796.3,1118.0],[2796.3,1257.1],[2837.9,1258.4],[2836.6,1268.8],[2811.9,1268.8],[2811.9,1287.0],[2831.4,1290.9],[2830.1,1301.3],[2811.9,1303.9],[2811.9,1322.1],[2831.4,1322.1],[2837.9,1328.6],[3079.7,1328.6],[3081.0,1393.6],[3126.5,1393.6],[3127.8,1372.8],[3138.2,1371.5],[3138.2,1329.9],[3148.6,1328.6],[3156.4,1305.2],[3156.4,1285.7],[3148.6,1262.3],[3138.2,1261.0],[3138.2,1183.0],[3081.0,1183.0],[3079.7,1262.3],[2940.6,1262.3],[2939.3,1118.0]],[[3134.3,1418.3],[3081.0,1418.3],[3079.7,1540.5],[2824.9,1540.5],[2822.3,1664.0],[2835.3,1665.3],[2835.3,1678.3],[2869.1,1678.3],[2870.4,1597.7],[3017.3,1597.7],[3018.6,1567.8],[3048.5,1567.8],[3049.8,1596.4],[3138.2,1597.7]],[[2714.4,962.0],[2813.2,962.0],[2813.2,1066.0],[2714.4,1066.0]],[[2714.4,1536.6],[3142.1,1536.6],[3142.1,1601.6],[2714.4,1601.6]],[[2944.5,716.3],[2949.7,716.3],[2949.7,988.0],[2944.5,988.0]],[[3142.1,1261.0],[3237.0,1261.0],[3237.0,1329.9],[3142.1,1329.9]],[[3079.7,945.1],[3142.1,945.1],[3142.1,1647.1],[3079.7,1647.1]],[[236.6,754.0],[291.2,754.0],[291.2,897.0],[236.6,897.0]],[[637.0,716.3],[650.0,716.3],[650.0,986.7],[637.0,986.7]],[[236.6,1690.0],[291.2,1690.0],[291.2,1839.5],[236.6,1839.5]]],"marks":[],"roof":[]}];
+</script>
+<script>
+window.FACULTY = {
+ "updated": "2026-09-30T12:00:00Z",
+ "people": [
+  {
+   "id": "maeghamdi",
+   "room": "F1-105",
+   "url": "https://uqu.edu.sa/maeghamdi/App/CV",
+   "name_ar": "محمد علي عيد الغامدي",
+   "name_en": "Mohammed Ali Eid Alghamdi",
+   "title_ar": "أستاذ",
+   "title_en": "Professor",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "ynalsaleh",
+   "room": "F1-018",
+   "url": "https://uqu.edu.sa/ynalsaleh/App/CV",
+   "name_ar": "ياسر ناصر عبدالله الصالح",
+   "name_en": "Yasir Nasser Abdullah AlSaleh",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "aobaz01",
+   "room": "F1-017",
+   "url": "https://uqu.edu.sa/aobaz01/App/CV",
+   "name_ar": "عبدالله عمر محمد باز",
+   "name_en": "Abdullah Omar Mohammad Baz",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "mhsinky",
+   "room": "F1-016",
+   "url": "https://uqu.edu.sa/mhsinky/App/CV",
+   "name_ar": "محمد حسين محمد سنكي",
+   "name_en": "Mohammed Hussein Mohammed Sinky",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "fayzahrani",
+   "room": "F1-015",
+   "url": "https://uqu.edu.sa/fayzahrani/App/CV",
+   "name_ar": "فهد احمد يحي الاحمدي الزهراني",
+   "name_en": "Fahad Ahmed Yahya Al Zahrani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "ambasalamah",
+   "room": "F1-014",
+   "url": "https://uqu.edu.sa/ambasalamah/App/CV",
+   "name_ar": "انس محمد صالح باسلامه",
+   "name_en": "Anas Mohammad Saleh Basalamah",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "oabajri",
+   "room": "F1-047",
+   "url": "https://uqu.edu.sa/oabajri/App/CV",
+   "name_ar": "عمر عبدالعزيز عيسى باجري",
+   "name_en": "Omar Abdul Aziz Essa Bajri",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "hmbarakati",
+   "room": "F1-048",
+   "url": "https://uqu.edu.sa/hmbarakati/App/CV",
+   "name_ar": "حسين مبارك عبدالله البركاتي",
+   "name_en": "Hussain Mobarak Abdullah Albarakati",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "imdaghistani",
+   "room": "F1-033",
+   "url": "https://uqu.edu.sa/imdaghistani/App/CV",
+   "name_ar": "اسماعيل محمد ابراهيم داغستاني",
+   "name_en": "Ismail Mohammed Ibrahem Daghistani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "ofmandorah",
+   "room": "F1-032",
+   "url": "https://uqu.edu.sa/ofmandorah/App/CV",
+   "name_ar": "أبي فيصل مامون مندورة",
+   "name_en": "Obai Faisal Maamon Mandorah",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "raghamdi",
+   "room": "F1-049",
+   "url": "https://uqu.edu.sa/raghamdi/App/CV",
+   "name_ar": "رامي عبدالله عبدالمجيد الغامدي",
+   "name_en": "Rami Abdullah Abdulmajeed Alghamdi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "kamarhabi",
+   "room": "F1-050",
+   "url": "https://uqu.edu.sa/kamarhabi/App/CV",
+   "name_ar": "خالد علي درعين المرحبي",
+   "name_en": "Khalid Ali Derain Almarhabi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "insolbi",
+   "room": "F1-097",
+   "url": "https://uqu.edu.sa/insolbi/App/CV",
+   "name_ar": "ادريس ناصر علي الصلبي",
+   "name_en": "Idrees Nasser Ali Alsolbi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "aashumrani",
+   "room": "F1-096",
+   "url": "https://uqu.edu.sa/aashumrani/App/CV",
+   "name_ar": "علي احمد عبدالرحمن الشمراني",
+   "name_en": "Ali Ahmed A Alshumrani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "rnghazawi",
+   "room": "F1-118",
+   "url": "https://uqu.edu.sa/rnghazawi/App/CV",
+   "name_ar": "رائد نبيل سعيد غزاوي",
+   "name_en": "Rayed Nabil Saeed Ghazawi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "hfmlahza",
+   "room": "F1-117",
+   "url": "https://uqu.edu.sa/hfmlahza/App/CV",
+   "name_ar": "حاتم فريد محمد لحظة",
+   "name_en": "Hatim Fareed Mohammed Lahza",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "hhhsulimani",
+   "room": "F1-108",
+   "url": "https://uqu.edu.sa/hhhsulimani/App/CV",
+   "name_ar": "حمزة حسن حمزة سليماني",
+   "name_en": "Hamza Hasan Hamza Sulimani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "aaamunshi",
+   "room": "F1-095",
+   "url": "https://uqu.edu.sa/aaamunshi/App/CV",
+   "name_ar": "عمرو عبدالله احمد منشي",
+   "name_en": "Amr Abdullah Ahmed Munshi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "maakhayat",
+   "room": "F1-094",
+   "url": "https://uqu.edu.sa/maakhayat/App/CV",
+   "name_ar": "مصعب عبدالعزيز عبدالله خياط",
+   "name_en": "Mosab Abdulaziz Abdullah Khayat",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "gfbati",
+   "room": "F1-133",
+   "url": "https://uqu.edu.sa/gfbati/App/CV",
+   "name_ar": "غسان فاروق جودة باتي",
+   "name_en": "Ghassan Farouq Jwdah Bati",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "moturkistany",
+   "room": "F1-134",
+   "url": "https://uqu.edu.sa/moturkistany/App/CV",
+   "name_ar": "محمد عبيدالله عبدالقادر التركستاني",
+   "name_en": "Mohammad Obaidallah Abdulgader AlTurkistany",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "takashmeery",
+   "room": "F1-135",
+   "url": "https://uqu.edu.sa/takashmeery/App/CV",
+   "name_ar": "طارق امين محمد صالح كشميري",
+   "name_en": "Tariq Amin M S Kashmeery",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "mfelahi",
+   "room": "F1-137",
+   "url": "https://uqu.edu.sa/mfelahi/App/CV",
+   "name_ar": "محمد راشد فاضل الاهي",
+   "name_en": "Muhammad Rashid Fazal Elahi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "eafelemban",
+   "room": "F1-138",
+   "url": "https://uqu.edu.sa/eafelemban/App/CV",
+   "name_ar": "عماد عبدالرزاق شافعي فلمبان",
+   "name_en": "Emad Abdulrazzak Shafi Felemban",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "smbasalamah",
+   "room": "F1-013",
+   "url": "https://uqu.edu.sa/smbasalamah/App/CV",
+   "name_ar": "صالح محمد صالح باسلامة",
+   "name_en": "Saleh Mohammed Saleh Basalamah",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "mhsulami",
+   "room": "F1-011",
+   "url": "https://uqu.edu.sa/mhsulami/App/CV",
+   "name_ar": "مصلح حضيض مزيد السلمي",
+   "name_en": "Musleh Hudaud Mazyad Alsulami",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "aarharbi",
+   "room": "F1-010",
+   "url": "https://uqu.edu.sa/aarharbi/App/CV",
+   "name_ar": "ايمن عبدالرحمن راضي الحربي",
+   "name_en": "Ayman Abdulrahman Radhi Alharbi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "azabid",
+   "room": "F1-009",
+   "url": "https://uqu.edu.sa/azabid/App/CV",
+   "name_ar": "عبدالباسط زيد احمد عابد",
+   "name_en": "Abdulbasit Zaid Ahmed Abid",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "fhnajar",
+   "room": "F1-008",
+   "url": "https://uqu.edu.sa/fhnajar/App/CV",
+   "name_ar": "فيصل حسن اسعد نجار",
+   "name_en": "Faisal Hasan Asad Najar",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "awboghdadi",
+   "room": "F1-045",
+   "url": "https://uqu.edu.sa/awboghdadi/App/CV",
+   "name_ar": "احمد وديع زيني بغدادي",
+   "name_en": "Ahmad Wadea z Boghdadi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "akahazmi",
+   "room": "F1-028",
+   "url": "https://uqu.edu.sa/akahazmi/App/CV",
+   "name_ar": "احمد خالد علي الحازمي",
+   "name_en": "Ahmed Khalid Ali Alhazmi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "aatbukhari",
+   "room": "F1-029",
+   "url": "https://uqu.edu.sa/aatbukhari/App/CV",
+   "name_ar": "احمد عبدالحكيم تردى بخاري",
+   "name_en": "Ahmed Abdulhakim T Bukhari",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "ammiyajan",
+   "room": "F1-040",
+   "url": "https://uqu.edu.sa/ammiyajan/App/CV",
+   "name_ar": "عبدالعزيز محمد عبدالرزاق مياجان",
+   "name_en": "Abdulaziz Mohammed Abdulrazzaq Miyajan",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "azahrani",
+   "room": "F1-030",
+   "url": "https://uqu.edu.sa/azahrani/App/CV",
+   "name_ar": "احمد عطية علي الاحمدي الزهراني",
+   "name_en": "Ahmad Attiah A Alzahrani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "ahdaghistani",
+   "room": "F1-031",
+   "url": "https://uqu.edu.sa/ahdaghistani/App/CV",
+   "name_ar": "انس حازم محمد زكي داغستاني",
+   "name_en": "Anas Hazim MZ Daghistani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "hhsinky",
+   "room": "F1-112",
+   "url": "https://uqu.edu.sa/hhsinky/App/CV",
+   "name_ar": "حسن حسين محمد سنكي",
+   "name_en": "Hassan Hussein Mohammed Sinky",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "msqadah",
+   "room": "F1-111",
+   "url": "https://uqu.edu.sa/msqadah/App/CV",
+   "name_ar": "مهند صبيح محمد القدح",
+   "name_en": "Mohanad Sobih Muhammed Alqadah",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "mmfarrash",
+   "room": "F1-093",
+   "url": "https://uqu.edu.sa/mmfarrash/App/CV",
+   "name_ar": "ماجد محمود يعقوب فراش",
+   "name_en": "Majed Mahmood Yaqoub Farrash",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "aalzahrani",
+   "room": "F1-092",
+   "url": "https://uqu.edu.sa/aalzahrani/App/CV",
+   "name_ar": "احمد عطية احمد الزهراني",
+   "name_en": "Ahmad Atea Ahmad Alzahrani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "rmrihieli",
+   "room": "F1-116",
+   "url": "https://uqu.edu.sa/rmrihieli/App/CV",
+   "name_ar": "رياض مطيران سعيد الرحيلي",
+   "name_en": "Riyad Mterain Khalid Alrihieli",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "mkhalawani",
+   "room": "F1-115",
+   "url": "https://uqu.edu.sa/mkhalawani/App/CV",
+   "name_ar": "محمد كمال حسن حلواني",
+   "name_en": "Mohammad Kamal Hassan Halawani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "hflahza",
+   "room": "F1-091",
+   "url": "https://uqu.edu.sa/hflahza/App/CV",
+   "name_ar": "حسان فريد محمد لحظة",
+   "name_en": "Hassan Fareed M Lahza",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "washarif",
+   "room": "F1-110",
+   "url": "https://uqu.edu.sa/washarif/App/CV",
+   "name_ar": "وليد أبونمي عبدالله البركاتي الشريف",
+   "name_en": "Waleed Abunomi Abdallh Alsharif",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "bykazemi",
+   "room": "F1-109",
+   "url": "https://uqu.edu.sa/Profile/bykazemi",
+   "name_ar": "باسم يوسف محمد علي الكاظمي",
+   "name_en": "Basem Yousef Mohammed Alkazemi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "asqutbuddin",
+   "room": "F1-126",
+   "url": "https://uqu.edu.sa/asqutbuddin/App/CV",
+   "name_ar": "احمد صبغة الله غلام نبي قطب الدين",
+   "name_en": "Ahmad Sibghatallah Ghulamnabi Qutbuddin",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "hkballaji",
+   "room": "F1-127",
+   "url": "https://uqu.edu.sa/hkballaji/App/CV",
+   "name_ar": "هتان خالد يحيى بلاجي",
+   "name_en": "Hattan Khaled Yehya Ballaji",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "adharthi",
+   "room": "F1-128",
+   "url": "https://uqu.edu.sa/adharthi/App/CV",
+   "name_ar": "احمد دخيل الله عايض الحارثي",
+   "name_en": "Ahmed Dkhilallah A Alharthi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "smtalhi",
+   "room": "F1-129",
+   "url": "https://uqu.edu.sa/smtalhi/App/CV",
+   "name_ar": "سعيد مساعد سعيد الطلحي",
+   "name_en": "Saeed Musaad S Altalhi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "mknfiai",
+   "room": "F1-130",
+   "url": "https://uqu.edu.sa/mknfiai/App/CV",
+   "name_ar": "مجدي خالد علي النفيعي",
+   "name_en": "Majdi Khalid Ali Alnnfiai",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "hhhakam",
+   "room": "F1-132",
+   "url": "https://uqu.edu.sa/hhhakam/App/CV",
+   "name_ar": "حسام حسن محمد الحكمي",
+   "name_en": "Hosam Hasan Mohammed Alhakami",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "tfsomani",
+   "room": "F1-007",
+   "url": "https://uqu.edu.sa/tfsomani/App/CV",
+   "name_ar": "تركي فيصل عبيد الصماني",
+   "name_en": "Turki Faisal Obaid AlSomani",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "ossonbul",
+   "room": "F1-006",
+   "url": "https://uqu.edu.sa/ossonbul/App/CV",
+   "name_ar": "عمر سراج عمر سنبل",
+   "name_en": "Omar Siraj Omar Sonbul",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "dbsadie",
+   "room": "F1-005",
+   "url": "https://uqu.edu.sa/dbsadie/App/CV",
+   "name_ar": "ضيف الله بختي نغيمش الصاعدي",
+   "name_en": "Deafallah Bokte N Alsadie",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "ayjaafar",
+   "room": "F1-004",
+   "url": "https://uqu.edu.sa/ayjaafar/App/CV",
+   "name_ar": "عمار يوسف ابراهيم جعفر",
+   "name_en": "Amar Yousef Ibrahim Jaffar",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "khmotairi",
+   "room": "F1-003",
+   "url": "https://uqu.edu.sa/khmotairi/App/CV",
+   "name_ar": "خالد حاتم عسير المطيري",
+   "name_en": "Khaled Hatem A Almotairi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "whsabban",
+   "room": "F1-002",
+   "url": "https://uqu.edu.sa/whsabban/App/CV",
+   "name_ar": "وسام حسن صالح الصبان",
+   "name_en": "Wesam Hassan Saleh Alsabban",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "mmgethami",
+   "room": "F1-001",
+   "url": "https://uqu.edu.sa/mmgethami/App/CV",
+   "name_ar": "ماجد محمد فايت القثامي العتيبي",
+   "name_en": "Majid Mohammad Fait Algethami Alotaibi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "tmanzi",
+   "room": "F1-025",
+   "url": "https://uqu.edu.sa/tmanzi/App/CV",
+   "name_ar": "تركي محمد الحميدي العنزي",
+   "name_en": "Turki Mohammed Alhumidi Alanazi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "aaashehri",
+   "room": "F1-024",
+   "url": "https://uqu.edu.sa/aaashehri/App/CV",
+   "name_ar": "عزيز عبدالله عزيز الشهري",
+   "name_en": "Aziz Abdullah Aziz Alshehri",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "arzahrani",
+   "room": "F1-043",
+   "url": "https://uqu.edu.sa/arzahrani/App/CV",
+   "name_ar": "احمد راشد احمد البشيري",
+   "name_en": "Ahmed Rashed Ahmed Albashiri",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "fdharbi",
+   "room": "F1-044",
+   "url": "https://uqu.edu.sa/fdharbi/App/CV",
+   "name_ar": "فايز دخيل عطية الحربي",
+   "name_en": "Fayez Dakhel Attyah Alharbi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "zmmalakan",
+   "room": "F1-026",
+   "url": "https://uqu.edu.sa/zmmalakan/App/CV",
+   "name_ar": "زيني بن محسن بن ملكان الجاوي",
+   "name_en": "Zainy Mohsen Malakan Aljawy",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "aabawashkha",
+   "room": "F1-027",
+   "url": "https://uqu.edu.sa/aabawashkha/App/CV",
+   "name_ar": "عبدالعزيز علي احمد باوشخه",
+   "name_en": "Abdulaziz Ali Ahmed Bawashkha",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  },
+  {
+   "id": "tmqadah",
+   "room": "F1-090",
+   "url": "https://uqu.edu.sa/tmqadah/App/CV",
+   "name_ar": "ثامر محمد تاج الدين قدح",
+   "name_en": "Thamir Mohamadtajudin Ahmad Qadah",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "hssuwat",
+   "room": "F1-089",
+   "url": "https://uqu.edu.sa/hssuwat/App/CV",
+   "name_ar": "حاتم سعد براك السواط",
+   "name_en": "Hatim Saad B Alsuwat",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "asaharbi",
+   "room": "F1-107",
+   "url": "https://uqu.edu.sa/asaharbi/App/CV",
+   "name_ar": "عبدالله سمران احمد الحربي",
+   "name_en": "Abdullah Semran Ahmad Alharbi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "ahhindi",
+   "room": "F1-114",
+   "url": "https://uqu.edu.sa/ahhindi/App/CV",
+   "name_ar": "احمد حسن يحي لال الهندي",
+   "name_en": "Ahmad Hasan Y Alhindi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "aagutub",
+   "room": "F1-121",
+   "url": "https://uqu.edu.sa/aagutub/App/CV",
+   "name_ar": "عدنان عبدالعزيز محمد قطب",
+   "name_en": "Adnan Abdulaziz Muhammad Gutub",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "bmhshawi",
+   "room": "F1-122",
+   "url": "https://uqu.edu.sa/bmhshawi/App/CV",
+   "name_ar": "بندر محمد حمد الشاوي",
+   "name_en": "Bandar Mohammed Hamad Alshawi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "amhejali",
+   "room": "F1-123",
+   "url": "https://uqu.edu.sa/amhejali/App/CV",
+   "name_ar": "عاطف منصور محسن الحجيلي",
+   "name_en": "Atif Mansour Mohsen Alhejali",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "aaagil",
+   "room": "F1-124",
+   "url": "https://uqu.edu.sa/aaagil/App/CV",
+   "name_ar": "احمد عبدالله علي العقل",
+   "name_en": "Ahmad Abdullah A Alagil",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "ameidaroos",
+   "room": "F1-125",
+   "url": "https://uqu.edu.sa/ameidaroos/App/CV",
+   "name_ar": "عبدالهادي محضار عبدالقادر عيدروس",
+   "name_en": "Abdulhadi Mehdare Abdulghader AlEidaroos",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "yaotaibi",
+   "room": "F1-041",
+   "url": "https://uqu.edu.sa/yaotaibi/App/CV",
+   "name_ar": "يوسف عايض دغلوب العتيبي",
+   "name_en": "Youseef Aid D Alotaibi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "szharthi",
+   "room": "F1-042",
+   "url": "https://uqu.edu.sa/szharthi/App/CV",
+   "name_ar": "سلمان زايد عجير الحارثي",
+   "name_en": "Salman Zayed O Alharethi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة البرمجيات",
+   "email": ""
+  },
+  {
+   "id": "hrhuzali",
+   "room": "F1-023",
+   "url": "https://uqu.edu.sa/hrhuzali/App/CV",
+   "name_ar": "حسن رويزق رديد الهذلي",
+   "name_en": "Hassan Ruwayziq Rudayd Alhuzali",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "srotaibi",
+   "room": "F1-036",
+   "url": "https://uqu.edu.sa/srotaibi/App/CV",
+   "name_ar": "سلطان راضي سمران العتيبي",
+   "name_en": "Sultan Radhi Samran Alotaibi",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "fmdosari",
+   "room": "F1-035",
+   "url": "https://uqu.edu.sa/fmdosari/App/CV",
+   "name_ar": "فهد محمد سعد الدوسري",
+   "name_en": "Fahd Mohammad Saad Aldosari",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "هندسة الحاسب والشبكات",
+   "email": ""
+  },
+  {
+   "id": "shmotiri",
+   "room": "F1-106",
+   "url": "https://uqu.edu.sa/shmotiri/App/CV",
+   "name_ar": "سلطان حامد الحميدي المطيري",
+   "name_en": "Sultan Hamed Alhumedi Almotiri",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "الأمن السيبراني",
+   "email": ""
+  },
+  {
+   "id": "mahamid",
+   "room": "F1-113",
+   "url": "https://uqu.edu.sa/mahamid/App/CV",
+   "name_ar": "محمد عارف سيد حامد",
+   "name_en": "Muhammad Arif Syed Hamid",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علوم الحاسب والذكاء الاصطناعي",
+   "email": ""
+  },
+  {
+   "id": "maaattas",
+   "room": "F1-087",
+   "url": "https://uqu.edu.sa/maaattas/App/CV",
+   "name_ar": "محمد عبدالقادر عبدالله العطاس",
+   "name_en": "Mohammad Abdulqadir Abdullah Alattas",
+   "title_ar": "",
+   "title_en": "",
+   "dept": "علم البيانات",
+   "email": ""
+  }
+ ]
+};
+</script>
+<script>
+(() => {
+'use strict';
+const FLOORS = window.FLOORS || [];
+const PEOPLE = ((window.FACULTY||{}).people)||[];
+const NS='http://www.w3.org/2000/svg';
+
+// ---------- "You are here" spots (one per sign / QR code; pick with #here=<id>)
+const HERE = {
+  'g-elev-east': {floor:'G', x:2602, y:2098, ar:'عند الخروج من المصعد، بجانب غرفة الكهرباء', en:'Stepping out of the elevator, next to the electrical room'}
+};
+let hereId = (/here=([\w-]+)/.exec(location.hash)||[])[1];
+if(!HERE[hereId]) hereId='g-elev-east';
+const here = HERE[hereId];
+
+// ---------- text
+const T = {
+ ar:{q:'وين تبي تروح؟ اسم، رقم قاعة، أو خدمة', lang:'EN', here:'أنت هنا', nearest:'الأقرب إليك', tip:'ابحث باسم عضو هيئة التدريس أو رقم القاعة، أو اختر من الأزرار بالأعلى.',
+   floor:{G:'الطابق الأرضي','1':'الطابق الأول','2':'الطابق الثاني'}, fshort:{G:'أرضي','1':'أول','2':'ثاني'},
+   same:'في نفس الطابق — اتبع الممر', up:f=>`اصعد بالمصعد الذي خلفك إلى ${f}`, down:f=>`انزل بالمصعد إلى ${f}`,
+   sched:'الجدول الأسبوعي للقاعة', schedSub:'موقع جامعة أم القرى', seats:n=>`${n} مقعدًا`, profile:'الصفحة الشخصية', hours:'الساعات المكتبية',
+   noFac:'لا يوجد عضو هيئة تدريس مسجل لهذا المكتب بعد.', results:n=>`${n} نتيجة`, none:'لا توجد نتائج. جرّب اسمًا آخر أو رقم قاعة مثل 12-0.052',
+   back:'رجوع إلى موقعي', proto:'نموذج أولي', faculty:'أعضاء هيئة التدريس', onFloor:'في هذا الطابق', other:'طوابق أخرى',
+   chips:{wc:'دورات المياه',prayer:'المصلى',library:'المكتبة',elev:'المصاعد',class:'القاعات',lab:'المعامل',fac:'أعضاء هيئة التدريس'},
+   cats:{office:'مكتب',lab:'معمل',class:'قاعة دراسية',lecture:'قاعة محاضرات',aud:'المسرح',library:'المكتبة',prayer:'مصلى',court:'فناء',svc:'خدمات',wc:'دورات المياه',stair:'درج',elev:'مصعد',meet:'قاعة اجتماعات',entry:'مدخل القسم',void:'فراغ مفتوح',vest:'ممر'}},
+ en:{q:'Where to? Name, room number or service', lang:'ع', here:'You are here', nearest:'Closest to you', tip:'Search a faculty member or room number, or pick a button above.',
+   floor:{G:'Ground floor','1':'First floor','2':'Second floor'}, fshort:{G:'G','1':'1','2':'2'},
+   same:'Same floor — follow the corridor', up:f=>`Take the elevator behind you up to the ${f.toLowerCase()}`, down:f=>`Take the elevator down to the ${f.toLowerCase()}`,
+   sched:'Weekly room schedule', schedSub:'UQU website', seats:n=>`${n} seats`, profile:'Profile', hours:'Office hours',
+   noFac:'No faculty member is listed for this office yet.', results:n=>`${n} result${n===1?'':'s'}`, none:'No matches. Try another name or a room number like 12-0.052',
+   back:'Back to my location', proto:'Prototype', faculty:'Faculty', onFloor:'On this floor', other:'Other floors',
+   chips:{wc:'Restrooms',prayer:'Prayer room',library:'Library',elev:'Elevators',class:'Classrooms',lab:'Labs',fac:'Faculty'},
+   cats:{office:'Office',lab:'Lab',class:'Classroom',lecture:'Lecture hall',aud:'Auditorium',library:'Library',prayer:'Prayer room',court:'Courtyard',svc:'Service',wc:'Restrooms',stair:'Stairs',elev:'Elevator',meet:'Meeting room',entry:'Department entry',void:'Open to below',vest:'Vestibule'}}
+};
+let lang='ar'; try{ lang=localStorage.getItem('ccw-lang')||'ar'; }catch(e){}
+const t=k=>T[lang][k];
+
+// ---------- icons (24px, stroke)
+const IC={
+ wc:'<circle cx="8" cy="5" r="2"/><circle cx="16" cy="5" r="2"/><path d="M8 8v12M6 9h4l1 6H5l1-6M16 8v12M14 9h4v6h-4z"/>',
+ prayer:'<path d="M12 3c-3 2.5-5 5-5 8h10c0-3-2-5.5-5-8zM6 11h12v9H6zM10 20v-4a2 2 0 0 1 4 0v4"/>',
+ library:'<path d="M5 4h4v16H5zM10 4h4v16h-4zM15.5 5l3.5-1 2.5 15-3.5 1z"/>',
+ elev:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="m9 10 3-3 3 3M9 14l3 3 3-3"/>',
+ stair:'<path d="M4 20h5v-5h5v-5h5V5"/>',
+ class:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
+ lab:'<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4M7 8l2 2-2 2M11 12h4"/>',
+ fac:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',
+ office:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+ lecture:'<path d="M3 20h18M5 20v-4h14v4M7 16v-3h10v3M12 4v5M9 6l3-2 3 2"/>',
+ aud:'<path d="M3 20h18M5 20v-4h14v4M7 16v-3h10v3M12 4v5M9 6l3-2 3 2"/>',
+ here:'<circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="8"/>',
+ cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+ walk:'<circle cx="13" cy="4" r="2"/><path d="m9 21 2-6 3 2v4M7 12l3-4 4 1 2 4M11 15l-1-5"/>',
+ svc:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'
+};
+const CATCOL={wc:'--c-wc',prayer:'--c-prayer',library:'--c-library',elev:'--c-elev',stair:'--c-stair',class:'--c-class',lecture:'--c-lecture',aud:'--c-aud',lab:'--c-lab',fac:'--c-fac',office:'--c-office',meet:'--c-meet',svc:'--c-svc',court:'--c-court'};
+const icon=(k,size=20)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[k]||IC.office}</svg>`;
+
+// ---------- data
+const ROOMS={}; const byRoom={};
+PEOPLE.forEach(p=>(byRoom[p.room] ||= []).push(p));
+FLOORS.forEach(f=>f.rooms.forEach(r=>{ if(!r.id.includes('~')){ const b=bbox(r.poly); ROOMS[r.id]={r,f,b}; } }));
+function bbox(p){ let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9; for(const [x,y] of p){ x1=Math.min(x1,x);y1=Math.min(y1,y);x2=Math.max(x2,x);y2=Math.max(y2,y);} return {x1,y1,x2,y2,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}; }
+const fac=id=>byRoom[id]||[];
+const pname=p=>(lang==='ar'?(p.name_ar||p.name_en):(p.name_en||p.name_ar))||'';
+const rname=r=>(lang==='ar'?(r.ar||r.en):(r.en||r.ar))||T[lang].cats[r.cat]||'';
+const titleOf=id=>{ const {r}=ROOMS[id]; const ps=fac(id); return ps.length?pname(ps[0]):rname(r); };
+const fIdx=k=>FLOORS.findIndex(f=>f.key===k);
+const hereIdx=fIdx(here.floor);
+
+// ---------- map drawing
+const svg=document.getElementById('map');
+let hereG=null; let fi=hereIdx, vb=null, selId=null, hits=new Set(), labels=[];
+function el(tag,a,p){ const e=document.createElementNS(NS,tag); for(const k in a) e.setAttribute(k,a[k]); p&&p.appendChild(e); return e; }
+const pts=p=>p.map(q=>q.join(',')).join(' ');
+const measure=document.createElement('canvas').getContext('2d');
+const tw=(s,fs,w=600)=>{ measure.font=`${w} ${fs}px 'Readex Pro', sans-serif`; return measure.measureText(s).width; };
+
+function draw(){
+  const f=FLOORS[fi]; svg.textContent=''; labels=[];
+  (f.roof||[]).forEach(p=>el('polygon',{points:pts(p),class:'roof'},svg));
+  const w=el('g',{class:'walk','stroke-linejoin':'round'},svg);
+  f.circ.forEach(p=>el('polygon',{points:pts(p),stroke:'var(--walk)','stroke-width':6},w));
+  const g=el('g',{},svg), lg=el('g',{},svg);
+  f.rooms.forEach(r=>{
+    const id=r.id.split('~')[0], has=fac(id).length>0;
+    const cls=['r', has?'fac':r.cat]; if(id===selId) cls.push('sel'); if(hits.has(id)) cls.push('hit'); if(hits.size && !hits.has(id) && r.cat!=='entry') cls.push('dim');
+    el('polygon',{points:pts(r.poly),class:cls.join(' '),'data-id':id,rx:8},g);
+    if(r.id.includes('~')) return;
+    const b=ROOMS[id].b;
+    // icon for key categories
+    const ik = has?'fac':({wc:'wc',prayer:'prayer',library:'library',elev:'elev',stair:'stair',aud:'aud'})[r.cat];
+    if(ik){ const s=Math.min(b.w,b.h)*0.5, S=Math.max(26,Math.min(s,64));
+      const u=el('g',{class:'ic',transform:`translate(${b.cx-S/2},${b.cy-S/2}) scale(${S/24})`,color:r.cat==='elev'?'#B3261E':'var(--map-ink)',opacity:.8},lg); u.innerHTML=IC[ik];
+      labels.push({node:u,min:0,kind:'icon',b}); }
+    if(['stair','elev','vest','void','entry'].includes(r.cat)) return;
+    const name=has?pname(fac(id)[0]):rname(r); const num=(r.num||'').replace(f.prefix,'');
+    let fs=Math.min(30,b.h*.28); const lines=[name];
+    while(fs>8 && tw(name,fs)>b.w-10){ fs-=1; }
+    const y0 = ik? b.cy + Math.min(b.h*.22, 34) : b.cy - (num?fs*.35:0);
+    if(name && fs>8){ const tx=el('text',{x:b.cx,y:y0,'font-size':fs,'font-weight':has?700:600,class:'t'},lg); tx.textContent=name; labels.push({node:tx,min:fs,kind:'name'}); }
+    if(num){ const nfs=Math.max(8,Math.min(fs*.75,20,(b.w-6)/(num.length*.6))); const tx=el('text',{x:b.cx,y:y0+fs*.55+nfs*.7,'font-size':nfs,class:'t n'},lg); tx.textContent=num; labels.push({node:tx,min:nfs,kind:'num'}); }
+  });
+  // you are here (drawn in screen pixels, rescaled on every zoom)
+  hereG=null;
+  if(fi===hereIdx){ hereG=el('g',{'pointer-events':'none'},svg);
+    el('circle',{cx:0,cy:0,r:30,class:'here-pulse'},hereG);
+    el('circle',{cx:0,cy:0,r:9,fill:'var(--here)',stroke:'#fff','stroke-width':3},hereG);
+    const txt=t('here'); const fw=tw(txt,13,700)+22;
+    el('path',{d:`M${-fw/2} -46 h${fw} a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h${-fw/2+6} l-6 7 l-6 -7 h${-fw/2+6} a4 4 0 0 1 -4 -4 v-18 a4 4 0 0 1 4 -4z`,fill:'var(--here)'},hereG);
+    const tx=el('text',{x:0,y:-33,'font-size':13,'font-weight':700,fill:'#fff','text-anchor':'middle','dominant-baseline':'central'},hereG); tx.textContent=txt; }
+  if(!vb) fit(); else apply();
+}
+// show labels only when they'd be readable on screen
+function updateLabels(){ const px=svg.clientWidth/vb.w; if(hereG) hereG.setAttribute('transform',`translate(${here.x},${here.y}) scale(${1/px})`); labels.forEach(l=>{ const on = l.kind==='icon' ? true : l.min*px>=8.5; l.node.style.display=on?'':'none'; }); }
+
+// ---------- pan / zoom
+function fit(){ const f=FLOORS[fi]; const W=svg.clientWidth, H=svg.clientHeight; const s=Math.max(f.w/W,f.h/(H*0.62)); vb={w:W*s,h:H*s}; vb.x=f.w/2-vb.w/2; vb.y=f.h/2-vb.h*0.44; apply(); }
+function fitIds(ids){ const f=FLOORS[fi]; const bs=ids.map(id=>ROOMS[id]).filter(R=>R&&R.f===f).map(R=>R.b); if(!bs.length) return;
+  let x1=Math.min(...bs.map(b=>b.x1),here.floor===f.key?here.x:1e9), x2=Math.max(...bs.map(b=>b.x2),here.floor===f.key?here.x:-1e9), y1=Math.min(...bs.map(b=>b.y1),here.floor===f.key?here.y:1e9), y2=Math.max(...bs.map(b=>b.y2),here.floor===f.key?here.y:-1e9);
+  const W=svg.clientWidth,H=svg.clientHeight, wide=W>=900, visH=wide?H:H*0.42, top=wide?0:H*0.17, pad=150;
+  const s=Math.max((x2-x1+pad*2)/(wide?W*0.6:W),(y2-y1+pad*2)/visH,350/W); vb={w:W*s,h:H*s};
+  vb.x=(x1+x2)/2-vb.w/2-(wide?vb.w*0.15*(lang==='ar'?-1:1):0); vb.y=(y1+y2)/2-(top+visH/2)*s; apply(); }
+function apply(){ svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); updateLabels(); }
+function focus(x,y,w){ const W=svg.clientWidth,H=svg.clientHeight; const wide=W>=900; vb={w, h:w*H/W}; vb.x=x-vb.w/2 - (wide? vb.w*0.18*(lang==='ar'?-1:1):0); vb.y=y-vb.h*(wide?0.5:0.36); apply(); }
+function zoomAt(k,cx,cy){ const f=FLOORS[fi]; const nw=Math.min(Math.max(f.w,f.h)*2.5,Math.max(350,vb.w*k)); k=nw/vb.w; vb.x=cx-(cx-vb.x)*k; vb.y=cy-(cy-vb.y)*k; vb.w*=k; vb.h*=k; apply(); }
+const toSvg=(X,Y)=>{ const r=svg.getBoundingClientRect(); return [vb.x+(X-r.left)/r.width*vb.w, vb.y+(Y-r.top)/r.height*vb.h]; };
+svg.addEventListener('wheel',e=>{ e.preventDefault(); const [x,y]=toSvg(e.clientX,e.clientY); zoomAt(e.deltaY>0?1.15:1/1.15,x,y); },{passive:false});
+const P=new Map(); let moved=0, pinch=null, lastTap=0;
+svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY}); moved=0; if(P.size===2){ const [a,b]=[...P.values()]; pinch={d:Math.hypot(a.x-b.x,a.y-b.y),w:vb.w}; } });
+svg.addEventListener('pointermove',e=>{ if(!P.has(e.pointerId)) return; const p=P.get(e.pointerId), r=svg.getBoundingClientRect();
+  if(P.size===1){ moved+=Math.abs(e.clientX-p.x)+Math.abs(e.clientY-p.y); if(moved>5){ vb.x-=(e.clientX-p.x)/r.width*vb.w; vb.y-=(e.clientY-p.y)/r.height*vb.h; apply(); } }
+  P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(P.size===2&&pinch){ const [a,b]=[...P.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); const [cx,cy]=toSvg((a.x+b.x)/2,(a.y+b.y)/2); zoomAt(pinch.w*pinch.d/d/vb.w,cx,cy); moved=99; } });
+const up=e=>{ const tap=moved<=5&&P.size===1; P.delete(e.pointerId); if(P.size<2) pinch=null;
+  if(tap&&e.type==='pointerup'){ const now=Date.now(); const [x,y]=toSvg(e.clientX,e.clientY);
+    if(now-lastTap<300){ zoomAt(1/1.8,x,y); lastTap=0; return; } lastTap=now;
+    const n=document.elementFromPoint(e.clientX,e.clientY), id=n&&n.getAttribute&&n.getAttribute('data-id');
+    if(id && !['void','entry'].includes(ROOMS[id]?.r.cat)) openRoom(id,false); else if(!hits.size){ setSheet('peek'); } } };
+svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+window.addEventListener('resize',()=>{ vb=null; draw(); placeLocate(); });
+
+// ---------- floors
+function drawFloors(){ const box=document.getElementById('floors'); box.textContent='';
+  [...FLOORS].reverse().forEach(f=>{ const i=FLOORS.indexOf(f); const b=document.createElement('button'); b.type='button'; b.setAttribute('role','tab'); b.setAttribute('aria-selected',i===fi); b.setAttribute('aria-label',T[lang].floor[f.key]);
+    b.textContent=f.key==='G'?(lang==='ar'?'أ':'G'):f.key; if(i===hereIdx){ const d=document.createElement('span'); d.className='you'; b.append(d); }
+    b.onclick=()=>{ if(fi!==i){ fi=i; vb=null; draw(); drawFloors(); } }; box.append(b); }); }
+
+// ---------- chips
+const CHIPS=[
+ {k:'wc',test:r=>r.cat==='wc'}, {k:'prayer',test:r=>r.cat==='prayer'}, {k:'library',test:r=>r.cat==='library'&&/Library$|المكتبة/.test((r.en||'')+(r.ar||''))},
+ {k:'elev',test:r=>r.cat==='elev'}, {k:'class',test:r=>['class','lecture','aud'].includes(r.cat)}, {k:'lab',test:r=>r.cat==='lab'}, {k:'fac',test:(r,id)=>fac(id).length>0}];
+let chipOn=null;
+function drawChips(){ const box=document.getElementById('chips'); box.textContent='';
+  CHIPS.forEach(c=>{ const b=document.createElement('button'); b.type='button'; b.className='chip'; b.setAttribute('aria-pressed',chipOn===c.k);
+    b.innerHTML=`<span class="dot" style="background:var(${CATCOL[c.k]||'--c-svc'});color:var(--map-ink)">${icon(c.k,14)}</span>`; b.append(T[lang].chips[c.k]);
+    b.onclick=()=>{ chipOn = chipOn===c.k?null:c.k; drawChips(); chipOn? showChip(c) : clearHits(); }; box.append(b); }); }
+function clearHits(){ hits=new Set(); chipOn=null; drawChips(); draw(); home(); }
+
+// ---------- distances from "you are here"
+function dist(id){ const R=ROOMS[id]; if(R.f.key!==here.floor) return Infinity; return Math.hypot(R.b.cx-here.x,R.b.cy-here.y); }
+function nearestOf(test){ let best=null,bd=Infinity; for(const id in ROOMS){ const {r}=ROOMS[id]; if(!test(r,id)) continue; const d=dist(id); if(d<bd){bd=d;best=id;} } return best; }
+
+// ---------- sheet
+const sheet=document.getElementById('sheet'), sc=document.getElementById('sc');
+const STATES={peek:0.26,half:0.55,full:1};
+let state='peek';
+function sheetH(){ return sheet.getBoundingClientRect().height; }
+function setSheet(s){ state=s; const H=sheetH(); const peek = s==='full'? H : Math.round(window.innerHeight*STATES[s]);
+  sheet.style.setProperty('--peek', Math.min(H,peek)+'px'); placeLocate(); }
+function placeLocate(){ const L=document.getElementById('locate'); if(window.innerWidth>=900){ L.style.bottom=''; return; }
+  const v=parseFloat(getComputedStyle(sheet).getPropertyValue('--peek'))||190; L.style.bottom=(Math.min(v,window.innerHeight*0.6)+14)+'px'; }
+// drag
+(()=>{ const g=document.getElementById('grab'); let y0=null,p0=0;
+  const start=e=>{ y0=e.clientY; p0=parseFloat(getComputedStyle(sheet).getPropertyValue('--peek')); sheet.classList.add('dragging'); g.setPointerCapture(e.pointerId); };
+  g.addEventListener('pointerdown',start);
+  g.addEventListener('pointermove',e=>{ if(y0==null) return; const v=Math.max(120,Math.min(sheetH(),p0+(y0-e.clientY))); sheet.style.setProperty('--peek',v+'px'); });
+  const end=e=>{ if(y0==null) return; sheet.classList.remove('dragging'); const v=parseFloat(getComputedStyle(sheet).getPropertyValue('--peek')); const r=v/window.innerHeight; const moved=Math.abs(y0-e.clientY); y0=null;
+    if(moved<6){ setSheet(state==='peek'?'half':state==='half'?'full':'peek'); return; }
+    setSheet(r<0.38?'peek':r<0.75?'half':'full'); };
+  g.addEventListener('pointerup',end); g.addEventListener('pointercancel',end); })();
+
+const h=(tag,a={},...kids)=>{ const e=document.createElement(tag); for(const k in a){ if(k==='class') e.className=a[k]; else if(k==='html') e.innerHTML=a[k]; else if(k.startsWith('on')) e[k]=a[k]; else if(k==='text') e.textContent=a[k]; else e.setAttribute(k,a[k]); } kids.flat().forEach(c=>c!=null&&e.append(c.nodeType?c:document.createTextNode(c))); return e; };
+const icoBox=(k)=>h('span',{class:'ico',style:`background:var(${CATCOL[k]||'--c-svc'});color:var(--map-ink)`,html:icon(k,20)});
+function roomItem(id, extra){ const {r,f}=ROOMS[id]; const ps=fac(id); const k=ps.length?'fac':(['lecture','aud'].includes(r.cat)?'class':r.cat);
+  const sub=[T[lang].floor[f.key], r.num?'\u2066'+r.num+'\u2069':''].filter(Boolean).join(' · ');
+  return h('button',{class:'item',type:'button',onclick:()=>openRoom(id,true)}, icoBox(k), h('span',{class:'tx'}, h('b',{text:extra||titleOf(id)}), h('small',{text:sub})), h('span',{class:'chev',text:lang==='ar'?'‹':'›'})); }
+
+function home(){ selId=null; sc.textContent='';
+  sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill here',text:t('here')}), h('span',{class:'pill',text:T[lang].floor[here.floor]})),
+    h('h2',{text:here[lang]}));
+  const L=h('div',{class:'list'});
+  [['wc','wc',r=>r.cat==='wc'],['elev','stair',r=>r.cat==='stair'],['prayer','prayer',r=>r.cat==='prayer'],['library','library',r=>r.cat==='library'&&/Library$|المكتبة/.test((r.en||'')+(r.ar||''))]].forEach(([ck,ik,test])=>{
+    const id=nearestOf(test); if(!id) return; const it=roomItem(id, ik==='stair'?(lang==='ar'?'أقرب درج':'Nearest stairs'):T[lang].chips[ck]); it.querySelector('.ico').replaceWith(icoBox(ik)); L.append(it); });
+  sc.append(h('div',{class:'sec'}, h('h3',{text:t('nearest')}), L), h('p',{class:'sub',style:'margin-top:14px',text:t('tip')}));
+  draw(); }
+
+function openRoom(id, recenter){ const R=ROOMS[id]; if(!R) return; const {r,f,b}=R; selId=id;
+  const i=FLOORS.indexOf(f); if(i!==fi){ fi=i; vb=null; drawFloors(); }
+  draw(); if(recenter||true) focus(b.cx,b.cy,Math.max(900,Math.min(f.w*.45,Math.max(b.w,b.h)*7)));
+  sc.textContent='';
+  const ps=fac(id);
+  sc.append(h('div',{class:'pillrow'}, h('span',{class:'pill',text:T[lang].floor[f.key]}), r.num?h('span',{class:'pill num',text:r.num}):null, r.cap?h('span',{class:'pill',text:t('seats')(r.cap)}):null),
+    h('h2',{text:ps.length?pname(ps[0]):rname(r)}), ps.length?h('p',{class:'sub',text:rname(r)}):null);
+  // directions hint
+  const hereF=here.floor, targetF=f.key; let msg;
+  if(hereF===targetF) msg=t('same'); else msg=(fIdx(targetF)>fIdx(hereF)?t('up'):t('down'))(T[lang].floor[targetF]);
+  sc.append(h('div',{class:'hint'}, h('span',{class:'ico',html:icon(hereF===targetF?'walk':'elev',18)}), h('span',{text:msg})));
+  ps.forEach(p=>{ const other=lang==='ar'?p.name_en:p.name_ar; const title=lang==='ar'?(p.title_ar||p.title_en):(p.title_en||p.title_ar);
+    const base=(/^(https?:\/\/uqu\.edu\.sa\/(?:en\/)?[^\/?#]+)/i.exec(p.url||'')||[])[1];
+    const initials=(pname(p).replace(/^(د\.|dr\.?)\s*/i,'').trim()[0]||'?');
+    sc.append(h('div',{class:'person'}, h('span',{class:'avatar',text:initials}), h('div',{}, h('h4',{text:pname(p)}), other?h('p',{text:other}):null, (title||p.dept)?h('p',{text:[title,p.dept].filter(Boolean).join(' · ')}):null,
+      p.email?h('p',{},h('a',{href:'mailto:'+p.email,style:'color:var(--accent);direction:ltr;unicode-bidi:isolate',text:p.email})):null,
+      h('div',{class:'links'}, p.url?h('a',{class:'p',href:p.url,target:'_blank',rel:'noopener noreferrer',text:t('profile')}):null, base?h('a',{href:base+'/App/OfficeHours',target:'_blank',rel:'noopener noreferrer',text:t('hours')}):null)))); });
+  if(!ps.length && r.cat==='office') sc.append(h('p',{class:'empty',text:t('noFac')}));
+  if(r.sched) sc.append(h('a',{class:'cta',href:r.sched,target:'_blank',rel:'noopener noreferrer'}, h('span',{html:icon('cal',22)}), h('span',{}, h('div',{text:t('sched')}), h('small',{style:'opacity:.8;font-weight:400',text:t('schedSub')})), h('span',{class:'g',text:lang==='ar'?'↖':'↗'})));
+  sc.append(h('button',{class:'cta alt',type:'button',style:'width:100%;border:0',onclick:backHere}, h('span',{html:icon('here',22),style:'color:var(--here)'}), h('span',{text:t('back')})));
+  setSheet('half'); }
+
+function showChip(c){ hits=new Set(); const ids=Object.keys(ROOMS).filter(id=>c.test(ROOMS[id].r,id)); ids.forEach(id=>hits.add(id));
+  // go to the floor that has the nearest match (prefer "here" floor)
+  const same=ids.filter(id=>ROOMS[id].f.key===FLOORS[fi].key);
+  if(!same.length && ids.length){ fi=FLOORS.indexOf(ROOMS[ids[0]].f); vb=null; drawFloors(); }
+  draw(); listResults(ids, T[lang].chips[c.k]); fitIds(ids); }
+function listResults(ids, title){ selId=null; sc.textContent='';
+  sc.append(h('h2',{text:title}), h('p',{class:'sub',text:t('results')(ids.length)}));
+  if(!ids.length){ sc.append(h('p',{class:'empty',text:t('none')})); setSheet('half'); return; }
+  const cur=FLOORS[fi].key; const a=ids.filter(id=>ROOMS[id].f.key===cur).sort((x,y)=>dist(x)-dist(y)), b=ids.filter(id=>ROOMS[id].f.key!==cur).sort((x,y)=>fIdx(ROOMS[x].f.key)-fIdx(ROOMS[y].f.key));
+  if(a.length) sc.append(h('div',{class:'sec'}, h('h3',{text:t('onFloor')}), h('div',{class:'list'}, a.slice(0,60).map(id=>roomItem(id)))));
+  if(b.length) sc.append(h('div',{class:'sec'}, h('h3',{text:t('other')}), h('div',{class:'list'}, b.slice(0,60).map(id=>roomItem(id)))));
+  setSheet('half'); }
+
+// ---------- search
+const q=document.getElementById('q'), qc=document.getElementById('qclear');
+const norm=s=>(s||'').toLowerCase().normalize('NFKD').replace(/[ً-ٰٟ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/^(dr\.?|د\.?)\s*/,'').trim();
+let st; q.addEventListener('input',()=>{ qc.hidden=!q.value; clearTimeout(st); st=setTimeout(search,120); });
+qc.onclick=()=>{ q.value=''; qc.hidden=true; clearHits(); };
+q.addEventListener('focus',()=>{ if(window.innerWidth<900) setSheet('half'); });
+function search(){ const s=norm(q.value); chipOn=null; drawChips(); if(!s){ hits=new Set(); home(); return; }
+  const out=[];
+  for(const id in ROOMS){ const {r,f}=ROOMS[id]; if(['stair','elev','vest','void'].includes(r.cat) || (r.cat==='entry'&&!r.ar)) continue;
+    const ps=fac(id); const hay=[r.num, (r.num||'').replace(f.prefix,''), r.en, r.ar, ...ps.flatMap(p=>[p.name_ar,p.name_en,p.dept,p.email])].map(norm);
+    const score = hay.some(x=>x===s)?0 : ps.some(p=>[p.name_ar,p.name_en].map(norm).some(x=>x.includes(s)))?1 : hay.slice(0,2).some(x=>x.startsWith(s))?2 : (s.length>2&&hay.some(x=>x.includes(s)))?3 : 9;
+    if(score<9) out.push([score,id]); }
+  out.sort((a,b)=>a[0]-b[0]||dist(a[1])-dist(b[1])); const ids=out.slice(0,80).map(x=>x[1]);
+  hits=new Set(ids); if(ids.length && !ids.some(id=>ROOMS[id].f===FLOORS[fi])){ fi=FLOORS.indexOf(ROOMS[ids[0]].f); vb=null; drawFloors(); }
+  draw(); listResults(ids, `“${q.value.trim()}”`); fitIds(ids);
+  if(ids.length===1) openRoom(ids[0],true); }
+q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ q.blur(); } });
+
+function backHere(){ selId=null; hits=new Set(); chipOn=null; q.value=''; qc.hidden=true; drawChips();
+  if(fi!==hereIdx){ fi=hereIdx; drawFloors(); } draw(); focus(here.x,here.y,1100); home(); setSheet('peek'); }
+document.getElementById('locate').onclick=backHere;
+
+// ---------- language
+function applyLang(){ document.documentElement.lang=lang; document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  q.placeholder=t('q'); document.getElementById('lang').textContent=t('lang'); document.getElementById('proto').textContent=t('proto');
+  drawChips(); drawFloors(); if(selId) openRoom(selId,false); else if(q.value) search(); else home(); }
+document.getElementById('lang').onclick=()=>{ lang=lang==='ar'?'en':'ar'; try{ localStorage.setItem('ccw-lang',lang); }catch(e){} applyLang(); };
+
+// ---------- boot: open at "you are here"
+applyLang(); focus(here.x,here.y,1100); setSheet('peek');
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ draw(); });
+})();
+</script>
+
+</body></html>
