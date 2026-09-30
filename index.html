@@ -67,7 +67,9 @@ button{cursor:pointer}
 .search input::placeholder{color:var(--muted)}
 .clear{border:0;background:var(--sheet-2);width:34px;height:34px;border-radius:50%;font-size:18px;line-height:1;color:var(--muted)}
 .round{flex:none;width:52px;height:52px;border-radius:50%;border:0;background:var(--sheet);box-shadow:var(--float);font-weight:700;font-size:14px}
-.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-inline:-12px;padding-inline:12px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-block:4px 12px;margin-block:-4px -12px;margin-inline:-12px;padding-inline:12px;overscroll-behavior-x:contain;-webkit-mask-image:linear-gradient(to var(--fade-dir,right),#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to var(--fade-dir,right),#000 calc(100% - 28px),transparent)}
+[dir="rtl"] .chips{--fade-dir:left}
+.chips.at-end{-webkit-mask-image:none;mask-image:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;display:flex;align-items:center;gap:7px;height:40px;padding-inline:14px 16px;border-radius:20px;border:0;background:var(--sheet);box-shadow:var(--float);font-size:14px;font-weight:500;white-space:nowrap}
 .chip .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center}
@@ -119,7 +121,9 @@ button{cursor:pointer}
 
 /* ---------- wide screens: sheet becomes a floating side card */
 @media (min-width: 900px){
-  .top{inset-inline-end:auto;width:440px}
+  .top{inset-inline-end:12px;width:auto}
+  .top .searchrow{width:416px;max-width:100%}
+  .chips{width:max-content;max-width:100%;margin-inline:-12px 0;-webkit-mask-image:none;mask-image:none}
   .sheet{inset-inline-start:12px;inset-inline-end:auto;width:420px;top:176px;bottom:12px;height:auto;border-radius:24px;transform:none!important}
   .grab{display:none}
   .locate{bottom:24px!important}
@@ -1309,4 +1313,8 @@ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ draw();
 })();
 </script>
 
+
+<script>
+(function(){var c=document.getElementById("chips");if(!c)return;function upd(){var m=c.scrollWidth-c.clientWidth;c.classList.toggle("at-end",m<=2||Math.abs(c.scrollLeft)>=m-2);}c.addEventListener("scroll",upd,{passive:true});window.addEventListener("resize",upd);new MutationObserver(upd).observe(c,{childList:true,subtree:true});c.addEventListener("wheel",function(e){if(c.scrollWidth<=c.clientWidth||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;var dir=getComputedStyle(c).direction==="rtl"?-1:1;c.scrollLeft+=e.deltaY*dir;e.preventDefault();},{passive:false});setTimeout(upd,300);})();
+</script>
 </body></html>
